@@ -29,6 +29,20 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # 从最新 Release 下载 appcast.xml（Sparkle 自动更新清单）
+      # release.yml 生成 appcast.xml 并上传为 Release 资源，
+      # pages.yml 部署官网时需一并带上，否则会覆盖掉 release.yml 部署的 appcast.xml
+      - name: Fetch appcast.xml from latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download --pattern appcast.xml --dir docs/ --clobber || true
+          if [ -f docs/appcast.xml ]; then
+            echo "appcast.xml downloaded successfully"
+          else
+            echo "No appcast.xml found in releases (expected for first deployment)"
+          fi
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
