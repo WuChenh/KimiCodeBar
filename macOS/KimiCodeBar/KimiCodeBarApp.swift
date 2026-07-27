@@ -117,50 +117,18 @@ struct KimiCodeBarApp: App {
 
 // MARK: - 配色
 
-private func dynamicColor(light: NSColor, dark: NSColor) -> Color {
-    Color(NSColor(name: nil, dynamicProvider: { appearance in
-        let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-        return isDark ? dark : light
-    }))
-}
-
 extension ShapeStyle where Self == Color {
-    static var kimiPanelBackground: Color {
-        dynamicColor(
-            light: NSColor(red: 0.91, green: 0.91, blue: 0.93, alpha: 1.0),
-            dark: NSColor(red: 0.06, green: 0.08, blue: 0.13, alpha: 1.0)
-        )
-    }
-
-    static var kimiCardBackground: Color {
-        dynamicColor(
-            light: NSColor(white: 0.99, alpha: 1.0),
-            dark: NSColor(red: 0.11, green: 0.14, blue: 0.21, alpha: 1.0)
-        )
-    }
-
+    /// Kimi 品牌蓝色
     static var kimiBlue: Color { Color(red: 0.23, green: 0.51, blue: 0.96) }
 
-    static var kimiTextPrimary: Color {
-        dynamicColor(
-            light: NSColor(white: 0.12, alpha: 1.0),
-            dark: NSColor(white: 1.0, alpha: 1.0)
-        )
-    }
+    /// 主文本色，跟随系统 Light/Dark 自动适配
+    static var kimiTextPrimary: Color { .primary }
 
-    static var kimiTextSecondary: Color {
-        dynamicColor(
-            light: NSColor(white: 0.35, alpha: 1.0),
-            dark: NSColor(white: 1.0, alpha: 0.55)
-        )
-    }
+    /// 次级文本色
+    static var kimiTextSecondary: Color { .secondary }
 
-    static var kimiTextTertiary: Color {
-        dynamicColor(
-            light: NSColor(white: 0.50, alpha: 1.0),
-            dark: NSColor(white: 1.0, alpha: 0.40)
-        )
-    }
+    /// 三级文本色
+    static var kimiTextTertiary: Color { .secondary.opacity(0.45) }
 }
 
 // MARK: - 菜单栏图标
@@ -653,7 +621,7 @@ struct AppUpdateRow: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.kimiCardBackground)
+                .fill(.regularMaterial)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.kimiTextPrimary.opacity(isHovered ? 0.06 : 0))
@@ -717,7 +685,7 @@ struct KimiMenu: View {
             }
         }
         .padding(4)
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
@@ -916,7 +884,7 @@ struct KimiMenu: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.kimiCardBackground)
+                        .fill(.regularMaterial)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color.kimiTextPrimary.opacity(isHoveredUpdateLog ? 0.06 : 0))
@@ -942,7 +910,7 @@ struct KimiMenu: View {
         }
         .padding(16)
         .frame(width: 340)
-        .background(Color.kimiPanelBackground)
+        .background(.ultraThinMaterial)
         .overlay {
             if model.selectedProvider == .kimi && !model.hasCredential {
                 LoginOverlayView(isMenuVisible: isMenuVisible)
@@ -1065,7 +1033,7 @@ struct LoginOverlayView: View {
 
     var body: some View {
         ZStack {
-            Color.kimiPanelBackground.opacity(0.94)
+            Color.clear.background(.ultraThinMaterial)
 
             VStack(spacing: 16) {
                 AnimatedKimiCodeLogo(width: 52, isAnimating: isMenuVisible)
@@ -1225,7 +1193,7 @@ struct UsageCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity)
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
@@ -1285,7 +1253,7 @@ struct CompactQuotaBar: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
@@ -1367,7 +1335,7 @@ struct BoosterWalletCard: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -1566,7 +1534,7 @@ struct KimiServerCard: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -1612,6 +1580,7 @@ struct ActionButton: View {
     let action: () -> Void
     var disabled: Bool = false
     @State private var isHovered = false
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Button(action: action) {
@@ -1637,7 +1606,10 @@ struct ActionButton: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .foregroundStyle(disabled ? .kimiTextTertiary : (isHovered ? .kimiTextPrimary : .kimiTextSecondary))
-            .background(isHovered && !disabled ? Color.kimiTextPrimary.opacity(0.10) : Color.kimiTextPrimary.opacity(0.06))
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(isHovered && !disabled ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(Color.clear))
+            )
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
@@ -1721,14 +1693,7 @@ struct CommunityButton: View {
             .foregroundStyle(isHovered ? .kimiTextPrimary : .kimiTextSecondary)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isHovered ? Color.kimiTextPrimary.opacity(0.12) : Color.clear)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isHovered ? Color.kimiTextPrimary.opacity(0.40) : Color.kimiTextPrimary.opacity(0.20), lineWidth: 1)
-            )
+            .glassEffectIfAvailable(in: .rect(cornerRadius: 8), isHovered: isHovered)
         }
         .buttonStyle(.plain)
         .cursor(.pointingHand)
@@ -2113,7 +2078,7 @@ struct UpdateAlertView: View {
             .padding(.bottom, 20)
         }
         .frame(width: 400)
-        .background(Color.kimiPanelBackground)
+        .background(.ultraThinMaterial)
         .onAppear {
             Task {
                 await model.loadKimiReleaseNotesIfNeeded()
@@ -2173,7 +2138,7 @@ struct AppUpdateAlertView: View {
             .padding(.bottom, 20)
         }
         .frame(width: 360)
-        .background(Color.kimiPanelBackground)
+        .background(.ultraThinMaterial)
     }
 }
 
@@ -2253,7 +2218,7 @@ struct UpdateLogView: View {
             Spacer(minLength: 16)
         }
         .frame(width: 320)
-        .background(Color.kimiPanelBackground)
+        .background(.ultraThinMaterial)
         .onAppear {
             load()
         }
@@ -2376,7 +2341,7 @@ struct UpdateErrorPopoverView: View {
             .padding(.vertical, 14)
         }
         .frame(width: 320)
-        .background(Color.kimiPanelBackground)
+        .background(.ultraThinMaterial)
     }
 }
 
@@ -2428,12 +2393,7 @@ final class SettingsWindowManager {
         window.collectionBehavior = [.managed, .canJoinAllSpaces]
         window.level = .floating
         window.titlebarAppearsTransparent = true
-        window.backgroundColor = NSColor(name: nil, dynamicProvider: { appearance in
-            let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            return isDark
-                ? NSColor(red: 0.06, green: 0.08, blue: 0.13, alpha: 1.0)
-                : NSColor(red: 0.91, green: 0.91, blue: 0.93, alpha: 1.0)
-        })
+        window.backgroundColor = .windowBackgroundColor
         window.center()
         window.contentView = NSHostingView(rootView: SettingsRootView())
         window.isReleasedWhenClosed = false
@@ -2658,7 +2618,7 @@ struct SettingsRootView: View {
                 Spacer()
             }
             .frame(width: 180)
-            .background(Color.kimiPanelBackground)
+            .background(.ultraThinMaterial)
 
             switch selectedPane {
             case .basic:
@@ -2758,7 +2718,7 @@ struct SettingsCard<Content: View>: View {
                     .padding(.bottom, 14)
             }
         }
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
@@ -3356,7 +3316,7 @@ struct BasicSettingsView: View {
             .padding(.bottom, 16)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color.kimiPanelBackground)
+        .background(.ultraThinMaterial)
         .onAppear {
             editingKey = model.key
             isEditingKey = model.key.isEmpty
@@ -3577,7 +3537,7 @@ struct PanelCustomSettingsView: View {
             .padding(.bottom, 16)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color.kimiPanelBackground)
+        .background(.ultraThinMaterial)
     }
 }
 
@@ -3657,7 +3617,7 @@ struct AboutSettingsView: View {
             .padding(.bottom, 16)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color.kimiPanelBackground)
+        .background(.ultraThinMaterial)
     }
 }
 
@@ -3673,7 +3633,7 @@ struct SkillsSettingsView: View {
 
     var body: some View {
         ZStack {
-            Color.kimiPanelBackground
+            Color.clear.background(.ultraThinMaterial)
 
             if isLoading {
                 HStack(spacing: 8) {
@@ -3748,7 +3708,7 @@ struct SkillsSettingsView: View {
                                 }
                             }
                         }
-                        .background(Color.kimiPanelBackground)
+                        .background(.ultraThinMaterial)
 
                         Divider()
                             .background(Color.kimiTextPrimary.opacity(0.08))
@@ -3864,7 +3824,7 @@ struct SkillsSettingsView: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.kimiCardBackground)
+            .background(.regularMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
             // 正文卡片（使用 TextEditor 按需渲染，避免 Text + textSelection 布局全文卡死主线程）
@@ -3873,11 +3833,11 @@ struct SkillsSettingsView: View {
                     .font(.system(size: 12, design: .monospaced))
                     .foregroundStyle(.kimiTextSecondary)
                     .scrollContentBackground(.hidden)
-                    .background(Color.kimiCardBackground)
+                    .background(.regularMaterial)
                     .frame(maxWidth: .infinity, minHeight: 200, maxHeight: 500)
                     .padding(12)
             }
-            .background(Color.kimiCardBackground)
+            .background(.regularMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .padding(.horizontal, 20)
@@ -3989,7 +3949,7 @@ private struct SkillHorizontalItem: View {
         } else if isHovered {
             return Color.kimiTextPrimary.opacity(0.08)
         } else {
-            return Color.kimiCardBackground
+            return Color.clear
         }
     }
 }
@@ -4153,7 +4113,7 @@ struct FeatureHighlightCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
@@ -4232,6 +4192,23 @@ struct ErrorMessageView: View {
                 .stroke(Color.orange.opacity(0.25), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+// MARK: - macOS 26 Glass 效果适配
+
+extension View {
+    /// macOS 26 上应用 glassEffect，旧版系统回退到 regularMaterial 背景
+    @ViewBuilder
+    func glassEffectIfAvailable(in shape: some Shape, isHovered: Bool = false) -> some View {
+        if #available(macOS 26, *) {
+            self.glassEffect(in: shape)
+        } else {
+            self.background(
+                shape
+                    .fill(isHovered ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(Color.clear))
+            )
+        }
     }
 }
 
@@ -4316,7 +4293,7 @@ struct BalanceCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
@@ -4337,7 +4314,7 @@ struct BalanceLoadingCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity)
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
@@ -4376,7 +4353,7 @@ struct BalanceErrorCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
@@ -4414,7 +4391,7 @@ struct BalanceEmptyCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }

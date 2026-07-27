@@ -379,7 +379,7 @@ struct LocalUsageCard: View {
             }
         }
         .padding(14)
-        .background(Color.kimiCardBackground)
+        .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
@@ -555,7 +555,7 @@ struct LocalUsageCard: View {
                 .foregroundStyle(.kimiTextPrimary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(Color.kimiPanelBackground)
+                .background(.ultraThinMaterial)
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
@@ -563,7 +563,7 @@ struct LocalUsageCard: View {
                 )
 
             TooltipTriangle()
-                .fill(Color.kimiPanelBackground)
+                .fill(.ultraThinMaterial)
                 .frame(width: 10, height: 5)
         }
     }

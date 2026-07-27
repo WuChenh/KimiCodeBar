@@ -224,7 +224,7 @@ struct ArchiveSettingsView: View {
             .padding(.bottom, 16)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color.kimiPanelBackground)
+        .background(.ultraThinMaterial)
         .onAppear {
             Task { await manager.scanSessions() }
         }
