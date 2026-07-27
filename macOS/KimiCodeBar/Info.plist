@@ -24,13 +24,5 @@
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSUIElement</key>
 	<true/>
-	<key>SUAutomaticallyUpdate</key>
-	<false/>
-	<key>SUEnableAutomaticChecks</key>
-	<true/>
-	<key>SUFeedURL</key>
-	<string>https://xifandev.github.io/KimiCodeBar/appcast.xml</string>
-	<key>SUPublicEDKey</key>
-	<string>Dxaz/GCVJzCedn98bri8v8yyEbRxTf3xLSKAH3AHnkc=</string>
 </dict>
 </plist>

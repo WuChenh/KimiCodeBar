@@ -103,7 +103,6 @@ struct KimiCodeBarApp: App {
     init() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
         NSApplication.shared.appearance = ThemeManager.shared.theme.nsAppearance
-        _ = SparkleUpdater.shared
     }
 
     var body: some Scene {
@@ -622,12 +621,10 @@ final class KimiCodeLogoLayerView: NSView {
     }
 }
 
-// MARK: - App 自动更新行（Sparkle）
+// MARK: - App 版本行
 
 struct AppUpdateRow: View {
-    @StateObject private var model = KimiCodeBarModel.shared
     @StateObject private var languageManager = LanguageManager.shared
-    @StateObject private var sparkleUpdater = SparkleUpdater.shared
     @State private var isHovered = false
 
     var body: some View {
@@ -638,7 +635,19 @@ struct AppUpdateRow: View {
 
             Spacer()
 
-            rightContent()
+            HStack(spacing: 6) {
+                Text(appVersion())
+                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.kimiTextSecondary)
+
+                LText("查看更新")
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundStyle(.kimiTextTertiary)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 1)
+                    .background(Color.kimiTextPrimary.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
+            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
@@ -655,53 +664,14 @@ struct AppUpdateRow: View {
         .onHover { isHovered = $0 }
         .cursor(.pointingHand)
         .onTapGesture {
-            if sparkleUpdater.isUpdateReadyToRestart {
-                sparkleUpdater.restartToInstallUpdate()
-            } else if sparkleUpdater.isUpdateAvailable || model.pendingAppUpdateVersion != nil {
-                sparkleUpdater.showStandardUpdateUI()
-            } else {
-                openGitHubReleases()
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func rightContent() -> some View {
-        HStack(spacing: 6) {
-            Text(appVersion())
-                .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundStyle(.kimiTextSecondary)
-
-            if sparkleUpdater.didDownloadFail {
-                LText("下载新版本")
-                    .font(.system(size: 9, weight: .medium))
-                    .foregroundStyle(.orange)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 1)
-                    .background(Color.orange.opacity(0.12))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
-            } else if sparkleUpdater.isUpdateAvailable || model.pendingAppUpdateVersion != nil {
-                LText("发现新版本")
-                    .font(.system(size: 9, weight: .medium))
-                    .foregroundStyle(.orange)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 1)
-                    .background(Color.orange.opacity(0.12))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
-            } else {
-                LText("当前最新")
-                    .font(.system(size: 9, weight: .medium))
-                    .foregroundStyle(.kimiTextTertiary)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 1)
-                    .background(Color.kimiTextPrimary.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
-            }
+            openGitHubReleases()
         }
     }
 
     private func openGitHubReleases() {
-        sparkleUpdater.openGitHubReleases()
+        if let url = URL(string: "https://github.com/xifandev/KimiCodeBar/releases/") {
+            NSWorkspace.shared.open(url)
+        }
     }
 }
 
@@ -710,7 +680,6 @@ struct AppUpdateRow: View {
 struct KimiMenu: View {
     @StateObject private var model = KimiCodeBarModel.shared
     @StateObject private var languageManager = LanguageManager.shared
-    @StateObject private var sparkleUpdater = SparkleUpdater.shared
     @Environment(\.colorScheme) private var colorScheme
     @State private var isHoveredUpdateLog = false
     @State private var isMenuVisible = false
@@ -726,10 +695,9 @@ struct KimiMenu: View {
         model.showKimiVersionRow || model.pendingUpdateVersion != nil || model.hasCachedKimiUpdate
     }
 
-    /// App 版本行显示条件：用户开启，或检测到 App 新版本（含下载失败、待重启）时强制显示（无视隐藏设置）
+    /// App 版本行显示条件：用户开启即显示
     private var shouldShowAppUpdateRow: Bool {
-        model.showAppUpdateRow || sparkleUpdater.isUpdateAvailable || sparkleUpdater.didDownloadFail
-            || sparkleUpdater.isUpdateReadyToRestart || model.pendingAppUpdateVersion != nil
+        model.showAppUpdateRow
     }
 
     /// 当前平台是否正在加载
@@ -1006,7 +974,6 @@ struct KimiMenu: View {
                 // 面板打开立即刷新当前平台数据
                 model.refreshCurrentProvider(showsLoading: false)
                 // 面板打开时探测 App 新版本
-                SparkleUpdater.shared.checkForUpdateInformation()
                 // 面板打开时扫描一次本机消耗量（后台线程，3 分钟节流）
                 KimiLocalUsageService.shared.refreshIfNeeded()
                 model.checkCachedKimiUpdate()
@@ -1731,55 +1698,6 @@ struct LinkRow: View {
     }
 }
 
-// MARK: - 发现更新按钮（备用，当前未引用）
-
-/// 原用于「隐藏版本行且检测到新版本」时在 header 提供更新入口；
-/// 2026-07 起检测到新版本会强制显示版本行（见 KimiMenu.shouldShowAppUpdateRow），
-/// header 不再需要该替代入口，实现保留备用。
-struct AppUpdateBadgeButton: View {
-    @StateObject private var sparkleUpdater = SparkleUpdater.shared
-    @StateObject private var model = KimiCodeBarModel.shared
-    @State private var isHovered = false
-
-    var body: some View {
-        Button(action: {
-            if sparkleUpdater.isUpdateReadyToRestart {
-                sparkleUpdater.restartToInstallUpdate()
-            } else if sparkleUpdater.isUpdateAvailable || model.pendingAppUpdateVersion != nil {
-                sparkleUpdater.showStandardUpdateUI()
-            } else {
-                sparkleUpdater.openGitHubReleases()
-            }
-        }) {
-            HStack(spacing: 5) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 13))
-                    .foregroundStyle(.orange)
-
-                LText("发现更新")
-                    .font(.system(size: 13, weight: .medium))
-            }
-            .foregroundStyle(isHovered ? .kimiTextPrimary : .kimiTextSecondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isHovered ? Color.orange.opacity(0.15) : Color.orange.opacity(0.08))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.orange.opacity(isHovered ? 0.50 : 0.30), lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-        .cursor(.pointingHand)
-        .onHover { hovering in
-            isHovered = hovering
-        }
-    }
-}
-
-// MARK: - 社区版按钮
 
 struct CommunityButton: View {
     let url: URL
@@ -3644,8 +3562,7 @@ struct PanelCustomSettingsView: View {
                         SettingsCardDivider()
 
                         SettingsCardRow(
-                            title: languageManager.tr("KimiCodeBar 版本行"),
-                            subtitle: languageManager.tr("发现新版本时会强制显示")
+                            title: languageManager.tr("KimiCodeBar 版本行")
                         ) {
                             Toggle("", isOn: $model.showAppUpdateRow)
                                 .labelsHidden()
@@ -4567,7 +4484,6 @@ final class KimiCodeBarModel: ObservableObject {
     @AppStorage("quotaRefreshInterval") var quotaRefreshInterval: Double = 3
     @AppStorage("updateCheckInterval") var updateCheckInterval: Double = 10
     @AppStorage("menuBarDisplayScheme") var menuBarDisplayScheme: MenuBarDisplayScheme = .compact
-    @AppStorage("ignoredAppUpdateVersion") var ignoredAppUpdateVersion: String = ""
     @AppStorage("cachedKimiLatestVersion") var cachedKimiLatestVersion: String = ""
     @AppStorage("cachedKimiReleaseNotes") var cachedKimiReleaseNotes: String = ""
     @AppStorage("snoozedKimiUpdateUntil") var snoozedKimiUpdateUntil: Double = 0
@@ -4598,8 +4514,6 @@ final class KimiCodeBarModel: ObservableObject {
     @Published var pendingUpdateVersion: String?
     @Published var pendingReleaseNotes: String?
     @Published var updateErrorMessage: String?
-
-    @Published var pendingAppUpdateVersion: String?
 
     @Published var kimiServerState = KimiServerState()
 
@@ -4807,7 +4721,6 @@ final class KimiCodeBarModel: ObservableObject {
         refreshCurrentProvider()
         Task {
             await checkForKimiCLIUpdate()
-            await checkForAppUpdate()
             await refreshKimiServerState()
         }
     }
@@ -5247,54 +5160,6 @@ final class KimiCodeBarModel: ObservableObject {
                 cachedKimiReleaseNotes = changelog.notes
             }
         }
-    }
-
-    func checkForAppUpdate() async {
-        guard let latest = await fetchLatestVersionFromAppcast() else { return }
-
-        let current = normalizeVersion(appVersion())
-
-        guard compareVersions(current, latest) == .orderedAscending else { return }
-        guard latest != ignoredAppUpdateVersion else { return }
-
-        await MainActor.run {
-            pendingAppUpdateVersion = latest
-        }
-    }
-
-    /// 从 Sparkle appcast.xml 中解析最新版本号，避免调用 GitHub API 触发限流
-    private func fetchLatestVersionFromAppcast() async -> String? {
-        guard let feedURLString = Bundle.main.infoDictionary?["SUFeedURL"] as? String,
-              let url = URL(string: feedURLString) else {
-            return nil
-        }
-
-        do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-            guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == 200 else {
-                return nil
-            }
-
-            let xml = String(data: data, encoding: .utf8) ?? ""
-            let pattern = "<sparkle:shortVersionString>([^<]+)</sparkle:shortVersionString>"
-            guard let regex = try? NSRegularExpression(pattern: pattern, options: []),
-                  let match = regex.firstMatch(in: xml, options: [], range: NSRange(xml.startIndex..., in: xml)),
-                  let range = Range(match.range(at: 1), in: xml) else {
-                return nil
-            }
-
-            return String(xml[range]).trimmingCharacters(in: .whitespacesAndNewlines)
-        } catch {
-            return nil
-        }
-    }
-
-    func ignoreAppUpdate() {
-        if let version = pendingAppUpdateVersion {
-            ignoredAppUpdateVersion = version
-        }
-        pendingAppUpdateVersion = nil
     }
 
     private func sendUpdateNotification(version: String) {
