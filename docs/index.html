@@ -939,28 +939,7 @@
         font-size: 8px;
       }
 
-      .duo .kp-server {
-        gap: 6px;
-        padding: 8px;
-      }
 
-      .duo .kp-server-title {
-        font-size: 9px;
-      }
-
-      .duo .kp-version {
-        font-size: 8px;
-      }
-
-      .duo .kp-server-btns {
-        gap: 5px;
-      }
-
-      .duo .kp-btn {
-        padding: 5px 0;
-        border-radius: 6px;
-        font-size: 8px;
-      }
 
       .duo .kp-actions {
         gap: 5px;
@@ -982,17 +961,35 @@
         height: 11px;
       }
 
-      .duo .kp-cli {
-        padding: 7px 8px;
+      .duo .kp-local-usage {
+        gap: 6px;
+        padding: 8px;
+      }
+
+      .duo .kp-lu-title {
+        font-size: 9px;
+      }
+
+      .duo .kp-lu-range span {
+        font-size: 7px;
+        padding: 2px 5px;
+      }
+
+      .duo .kp-lu-metric-value {
+        font-size: 13px;
+      }
+
+      .duo .kp-lu-metric-value .unit {
+        font-size: 9px;
+      }
+
+      .duo .kp-lu-metric-label {
         font-size: 8px;
       }
 
-      .duo .kp-badge {
-        font-size: 7px;
-      }
-
-      .duo .kp-badge-new {
-        font-size: 6px;
+      .duo .kp-lu-chart {
+        height: 30px;
+        gap: 2px;
       }
 
       @media (max-width: 640px) {
@@ -1206,6 +1203,149 @@
       .update-visual .notify img {
         display: block;
         width: 100%;
+      }
+
+      /* ============ 用量一目了然 ============ */
+      .usage-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .usage-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        transition: border-color 0.2s, background 0.2s;
+      }
+
+      .usage-card:hover {
+        border-color: var(--border-strong);
+        background: var(--card-hover);
+      }
+
+      .usage-card-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .usage-card-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+      }
+
+      .usage-card-icon svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      .usage-card-icon.blue {
+        background: rgba(45, 117, 246, 0.15);
+        color: var(--blue-2);
+      }
+
+      .usage-card-icon.orange {
+        background: rgba(245, 166, 35, 0.15);
+        color: var(--orange);
+      }
+
+      .usage-card-icon.green {
+        background: rgba(74, 222, 128, 0.15);
+        color: #4ade80;
+      }
+
+      .usage-card-icon.purple {
+        background: rgba(168, 85, 247, 0.15);
+        color: #a855f7;
+      }
+
+      .usage-card-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-2);
+      }
+
+      .usage-card-value {
+        font-family: ui-rounded, 'SF Pro Rounded', -apple-system, 'PingFang SC', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+        line-height: 1;
+      }
+
+      .usage-card-value .unit {
+        font-size: 16px;
+        font-weight: 500;
+        margin-left: 2px;
+      }
+
+      .usage-card-value.green {
+        color: #4ade80;
+      }
+
+      .usage-card-bar {
+        width: 100%;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .usage-card-bar i {
+        display: block;
+        height: 100%;
+        width: 0;
+        border-radius: 999px;
+        animation: usage-grow 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+      }
+
+      @keyframes usage-grow {
+        to { width: var(--p); }
+      }
+
+      .usage-card-sub {
+        font-size: 12px;
+        color: var(--text-3);
+      }
+
+      .usage-card-metrics {
+        display: flex;
+        gap: 16px;
+      }
+
+      .usage-card-metric {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .usage-card-metric-val {
+        font-family: ui-rounded, 'SF Pro Rounded', -apple-system, 'PingFang SC', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+        line-height: 1.2;
+      }
+
+      .usage-card-metric-val.green {
+        color: #4ade80;
+      }
+
+      .usage-card-metric-lbl {
+        font-size: 11px;
+        color: var(--text-3);
       }
 
       /* ============ 隐私安全 ============ */
@@ -1706,80 +1846,117 @@
         animation: none;
       }
 
-      /* --- Kimi Web 卡片 --- */
-      .kp-server {
+      /* --- 本机消耗量卡片 --- */
+      .kp-local-usage {
         border-radius: 12px;
         padding: 12px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
       }
 
-      .kp-server-title {
+      .kp-lu-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .kp-lu-title {
         font-size: 13px;
         font-weight: 600;
         color: var(--p1);
       }
 
-      .kp-version {
-        font-size: 12px;
-        font-weight: 500;
-        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-        color: var(--p2);
-      }
-
-      .kp-server-btns {
+      .kp-lu-range {
+        margin-left: auto;
         display: flex;
-        gap: 8px;
+        gap: 2px;
+        padding: 2px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
       }
 
-      .kp-btn {
-        flex: 1;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        padding: 10px 0;
-        border-radius: 10px;
-        background: var(--act-bg);
-        border: 1px solid var(--act-border);
+      .kp-light .kp-lu-range {
+        background: rgba(0, 0, 0, 0.06);
+      }
+
+      .kp-lu-range span {
+        font-size: 11px;
+        font-weight: 500;
+        padding: 3px 8px;
+        border-radius: 999px;
         color: var(--p2);
+        cursor: default;
+        transition: background 0.15s, color 0.15s;
+      }
+
+      .kp-lu-range span.active {
+        background: var(--blue);
+        color: #fff;
+      }
+
+      .kp-lu-metrics {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .kp-lu-metric {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .kp-lu-metric.right {
+        margin-left: auto;
+        align-items: flex-end;
+      }
+
+      .kp-lu-metric-value {
+        font-family: ui-rounded, 'SF Pro Rounded', -apple-system, 'PingFang SC', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--p1);
+        line-height: 1.2;
+      }
+
+      .kp-lu-metric-value .unit {
         font-size: 13px;
         font-weight: 500;
-        transition:
-          color 0.15s,
-          background 0.15s;
       }
 
-      .kp-btn:hover {
-        background: var(--btn-h);
-        color: var(--p2);
+      .kp-lu-metric-value.green {
+        color: #4ade80;
       }
 
-      .kp-btn.wide {
-        flex: none;
-        width: 42%;
-      }
-
-      .kp-btn.disabled,
-      .kp-btn.disabled:hover {
+      .kp-lu-metric-label {
+        font-size: 11px;
         color: var(--p3);
-        background: var(--btn);
-        cursor: default;
-        pointer-events: none;
       }
 
-      .kp-btn .kp-ring {
-        width: 14px;
-        height: 14px;
-        border-width: 2px;
+      .kp-lu-chart {
+        display: flex;
+        align-items: flex-end;
+        gap: 3px;
+        height: 44px;
       }
-      .kp-btn.loading .kp-ring {
-        display: block;
+
+      .kp-lu-bar {
+        flex: 1;
+        min-width: 0;
+        border-radius: 2px;
+        background: var(--blue);
+        opacity: 0.35;
+        transition: opacity 0.15s;
       }
-      .kp-btn.loading .kp-btn-label,
-      .kp-btn.loading svg {
-        display: none;
+
+      .kp-lu-bar:hover {
+        opacity: 1;
+      }
+
+      .kp-lu-bar.accent {
+        opacity: 1;
       }
 
       /* --- 操作按钮 --- */
@@ -1834,51 +2011,7 @@
         animation: kp-spin 1s linear infinite;
       }
 
-      /* --- CLI 版本条 --- */
-      .kp-cli {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 14px;
-        border-radius: 12px;
-        background: var(--card);
-        color: var(--p3);
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        text-decoration: none;
-        transition: background 0.15s;
-        position: relative;
-      }
 
-      .kp-cli:hover::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: 12px;
-        background: var(--overlay);
-      }
-
-      .kp-cli .kp-version {
-        font-size: 12px;
-      }
-
-      .kp-badge-new {
-        font-size: 9px;
-        font-weight: 500;
-        padding: 1px 5px;
-        border-radius: 4px;
-        color: var(--orange);
-        background: color-mix(in srgb, var(--orange) 12%, transparent);
-      }
-
-      .kp-chevron {
-        color: var(--p3);
-        display: flex;
-      }
-      .kp-cli:hover .kp-chevron {
-        color: var(--p2);
-      }
 
       /* --- 复刻标识 pill --- */
       .live-pill {
@@ -2139,6 +2272,9 @@
           font-size: 15px;
         }
         .features {
+          grid-template-columns: 1fr;
+        }
+        .usage-grid {
           grid-template-columns: 1fr;
         }
         .duo {
@@ -2939,6 +3075,87 @@
       </div>
     </section>
 
+    <!-- 用量一目了然 -->
+    <section id="usage">
+      <div class="container">
+        <div class="split">
+          <div class="reveal">
+            <span class="sec-tag" data-i18n="usageTag">Usage</span>
+            <h2 data-i18n="usageTitle">用量一目了然</h2>
+            <p class="desc" data-i18n="usageDesc">从本周限额到本机 Token 消耗，多维度的用量追踪就在菜单栏上，抬眼可见，心中有数。</p>
+            <ul class="check-list">
+              <li>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <span data-i18n-html="usageCheck1"><b>7 天 / 5 小时双维度</b>，精准追踪限额使用进度，重置倒计时实时显示</span>
+              </li>
+              <li>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <span data-i18n-html="usageCheck2"><b>加油包余额与消费</b>，实时同步，金额花到哪里清清楚楚</span>
+              </li>
+              <li>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <span data-i18n-html="usageCheck3"><b>本机 Token 消耗</b>，扫描本地会话记录，按天展示用量趋势与缓存命中率</span>
+              </li>
+            </ul>
+          </div>
+          <div class="usage-visual reveal">
+            <div class="usage-grid">
+              <div class="usage-card">
+                <div class="usage-card-head">
+                  <div class="usage-card-icon blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <span class="usage-card-title" data-i18n="usageCardWeekly">本周用量</span>
+                </div>
+                <span class="usage-card-value">84<span class="unit">%</span></span>
+                <div class="usage-card-bar"><i style="--p:84%;background:#3B82F5"></i></div>
+                <span class="usage-card-sub" data-i18n="usageCardWeeklySub">13小时3分钟后重置</span>
+              </div>
+              <div class="usage-card">
+                <div class="usage-card-head">
+                  <div class="usage-card-icon orange">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  </div>
+                  <span class="usage-card-title" data-i18n="usageCard5H">5小时用量</span>
+                </div>
+                <span class="usage-card-value">6<span class="unit">%</span></span>
+                <div class="usage-card-bar"><i style="--p:6%;background:var(--orange)"></i></div>
+                <span class="usage-card-sub" data-i18n="usageCard5HSub">3小时3分钟后重置</span>
+              </div>
+              <div class="usage-card">
+                <div class="usage-card-head">
+                  <div class="usage-card-icon green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                  </div>
+                  <span class="usage-card-title" data-i18n="usageCardBooster">加油包余额</span>
+                </div>
+                <span class="usage-card-value">¥100</span>
+                <span class="usage-card-sub" data-i18n="usageCardBoosterSub">本月消费 ¥0 / ¥100</span>
+              </div>
+              <div class="usage-card">
+                <div class="usage-card-head">
+                  <div class="usage-card-icon purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  </div>
+                  <span class="usage-card-title" data-i18n="usageCardLocal">本机消耗量</span>
+                </div>
+                <div class="usage-card-metrics">
+                  <div class="usage-card-metric">
+                    <span class="usage-card-metric-val">2.4<span class="unit" style="font-size:14px;font-weight:500">M</span></span>
+                    <span class="usage-card-metric-lbl" data-i18n="usageCardLocalTokens">累计使用 Token</span>
+                  </div>
+                  <div class="usage-card-metric">
+                    <span class="usage-card-metric-val green">63.2%</span>
+                    <span class="usage-card-metric-lbl" data-i18n="usageCardLocalCache">缓存命中率</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 双主题预览 -->
     <section id="showcase">
       <div class="container">
@@ -3151,6 +3368,21 @@
             updateCheck3: '<b>一键安装更新</b>，也可以「稍后再说」',
             updateNotifyAlt: 'KimiCode 新版本系统通知',
             updateDialogAlt: 'KimiCode 新版本更新对话框',
+            usageTag: 'Usage',
+            usageTitle: '用量一目了然',
+            usageDesc: '从本周限额到本机 Token 消耗，多维度的用量追踪就在菜单栏上，抬眼可见，心中有数。',
+            usageCheck1: '<b>7 天 / 5 小时双维度</b>，精准追踪限额使用进度，重置倒计时实时显示',
+            usageCheck2: '<b>加油包余额与消费</b>，实时同步，金额花到哪里清清楚楚',
+            usageCheck3: '<b>本机 Token 消耗</b>，扫描本地会话记录，按天展示用量趋势与缓存命中率',
+            usageCardWeekly: '本周用量',
+            usageCardWeeklySub: '13小时3分钟后重置',
+            usageCard5H: '5小时用量',
+            usageCard5HSub: '3小时3分钟后重置',
+            usageCardBooster: '加油包余额',
+            usageCardBoosterSub: '本月消费 ¥0 / ¥100',
+            usageCardLocal: '本机消耗量',
+            usageCardLocalTokens: '累计使用 Token',
+            usageCardLocalCache: '缓存命中率',
             showcaseTag: 'Showcase',
             showcaseTitle: '明暗双主题，<br>跟随系统',
             showcaseDesc: '面板外观自动适配 macOS 深浅色模式，融入桌面，毫不突兀。',
@@ -3186,14 +3418,17 @@
             kpDisabled: '未启用',
             kpSpent: '本月消费',
             kpRunning: '运行中',
-            kpOpen: '打开',
-            kpStop: '停止',
-            kpRestart: '重启',
             kpConsole: '控制台',
             kpRefresh: '刷新',
             kpSettings: '设置',
             kpQuit: '退出',
             kpUpdateAvailable: '发现新版本',
+            kpLocalUsage: '本机消耗量',
+            kpRangeAll: '累计',
+            kpRangeToday: '今日',
+            kpRangeWeek: '7天',
+            kpTotalTokens: '累计使用 Token',
+            kpCacheHitRate: '缓存命中率',
           },
           en: {
             pageTitle: 'KimiCodeBar — Kimi Code usage at a glance in your menu bar',
@@ -3248,6 +3483,21 @@
             updateCheck3: '<b>One-click install</b>, or remind me later',
             updateNotifyAlt: 'New version system notification',
             updateDialogAlt: 'New version update dialog',
+            usageTag: 'Usage',
+            usageTitle: 'Usage at a Glance',
+            usageDesc: 'From weekly quota to local token consumption, multi-dimensional usage tracking lives in your menu bar — just look up.',
+            usageCheck1: '<b>7-day / 5-hour dual tracking</b>, precise quota progress with live reset countdown',
+            usageCheck2: '<b>Booster balance & spending</b>, synced in real time, know exactly where your credits go',
+            usageCheck3: '<b>Local token consumption</b>, scans local session logs, daily trends and cache hit rate',
+            usageCardWeekly: 'Weekly',
+            usageCardWeeklySub: 'Resets in 13h 3m',
+            usageCard5H: '5-Hour',
+            usageCard5HSub: 'Resets in 3h 3m',
+            usageCardBooster: 'Booster Balance',
+            usageCardBoosterSub: 'Spent this month: ¥0 / ¥100',
+            usageCardLocal: 'Local Consumption',
+            usageCardLocalTokens: 'Total Tokens Used',
+            usageCardLocalCache: 'Cache Hit Rate',
             showcaseTag: 'Showcase',
             showcaseTitle: 'Light & dark themes,<br>following your system',
             showcaseDesc: 'The panel automatically matches macOS light/dark mode, blending into your desktop.',
@@ -3283,14 +3533,17 @@
             kpDisabled: 'Disabled',
             kpSpent: 'Spent this month',
             kpRunning: 'Running',
-            kpOpen: 'Open',
-            kpStop: 'Stop',
-            kpRestart: 'Restart',
             kpConsole: 'Console',
             kpRefresh: 'Refresh',
             kpSettings: 'Settings',
             kpQuit: 'Quit',
             kpUpdateAvailable: 'Update available',
+            kpLocalUsage: 'Local Consumption',
+            kpRangeAll: 'All',
+            kpRangeToday: 'Today',
+            kpRangeWeek: '7 Days',
+            kpTotalTokens: 'Total Tokens Used',
+            kpCacheHitRate: 'Cache Hit Rate',
           },
         };
 
@@ -3474,20 +3727,40 @@
         </div>
         <div class="kp-bar thin"><i style="--p:0%"></i></div>
       </div>
-      <div class="kp-card kp-server">
-        <div class="kp-row">
-          <span class="kp-server-title">Kimi Web</span>
-          <span class="kp-badge green">` + t('kpRunning') + `</span>
-          <span class="kp-spacer"></span>
-          <span class="kp-version">0.23.5</span>
+      <div class="kp-card kp-local-usage">
+        <div class="kp-lu-header">
+          <span class="kp-lu-title">` + t('kpLocalUsage') + `</span>
+          <div class="kp-lu-range">
+            <span class="active">` + t('kpRangeAll') + `</span>
+            <span>` + t('kpRangeToday') + `</span>
+            <span>` + t('kpRangeWeek') + `</span>
+          </div>
         </div>
-        <div class="kp-server-btns">
-          <button type="button" class="kp-btn wide">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            <span class="kp-btn-label">` + t('kpOpen') + `</span><span class="kp-ring"></span>
-          </button>
-          <button type="button" class="kp-btn"><span class="kp-btn-label">` + t('kpStop') + `</span><span class="kp-ring"></span></button>
-          <button type="button" class="kp-btn"><span class="kp-btn-label">` + t('kpRestart') + `</span><span class="kp-ring"></span></button>
+        <div class="kp-lu-metrics">
+          <div class="kp-lu-metric">
+            <span class="kp-lu-metric-value">2.4<span class="unit">M</span></span>
+            <span class="kp-lu-metric-label">` + t('kpTotalTokens') + `</span>
+          </div>
+          <div class="kp-lu-metric right">
+            <span class="kp-lu-metric-value green">63.2%</span>
+            <span class="kp-lu-metric-label">` + t('kpCacheHitRate') + `</span>
+          </div>
+        </div>
+        <div class="kp-lu-chart">
+          <div class="kp-lu-bar" style="height:20%"></div>
+          <div class="kp-lu-bar" style="height:45%"></div>
+          <div class="kp-lu-bar" style="height:30%"></div>
+          <div class="kp-lu-bar" style="height:75%"></div>
+          <div class="kp-lu-bar accent" style="height:100%"></div>
+          <div class="kp-lu-bar" style="height:55%"></div>
+          <div class="kp-lu-bar" style="height:40%"></div>
+          <div class="kp-lu-bar" style="height:65%"></div>
+          <div class="kp-lu-bar" style="height:85%"></div>
+          <div class="kp-lu-bar" style="height:50%"></div>
+          <div class="kp-lu-bar" style="height:35%"></div>
+          <div class="kp-lu-bar" style="height:70%"></div>
+          <div class="kp-lu-bar" style="height:90%"></div>
+          <div class="kp-lu-bar" style="height:60%"></div>
         </div>
       </div>
     </div>
@@ -3508,13 +3781,7 @@
         <span>` + t('kpQuit') + `</span>
       </button>
     </div>
-    <button type="button" class="kp-cli">
-      <span>KimiCode CLI</span>
-      <span class="kp-version">0.23.5</span>
-      <span class="kp-badge-new">` + t('kpUpdateAvailable') + `</span>
-      <span class="kp-spacer"></span>
-      <span class="kp-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
-    </button>`;
+`;
       }
 
       function initKPEyes() {

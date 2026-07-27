@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>KimiCodeBar</title>
+        <item>
+            <title>1.2.0</title>
+            <pubDate>Fri, 24 Jul 2026 17:30:11 +0000</pubDate>
+            <sparkle:version>1</sparkle:version>
+            <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/xifandev/KimiCodeBar/releases/download/v1.2.0/KimiCodeBar-1.2.0-sparkle-update.zip" length="5127065" type="application/octet-stream" sparkle:edSignature="NYd32KnuBbJI5v5+Eze3WZ3C8AmAkh1o7UKqVYhcrYC9g8bJ8lW1bmAyPvqudZ02P5FxDF64VXaoZo0kJuinBg=="/>
+        </item>
+    </channel>
+</rss>

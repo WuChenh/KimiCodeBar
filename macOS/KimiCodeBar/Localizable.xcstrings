@@ -17,6 +17,16 @@
         }
       }
     },
+    "%@ · %@%@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$@%3$@"
+          }
+        }
+      }
+    },
     "%1$d天%2$d小时后重置": {
       "extractionState": "stale",
       "localizations": {
@@ -64,7 +74,29 @@
         }
       }
     },
+    "7 天使用 Token": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7-Day Token Used"
+          }
+        }
+      }
+    },
     "7D": {},
+    "7天": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7D"
+          }
+        }
+      }
+    },
     "API Key 格式错误，应以 sk-kimi- 开头": {
       "extractionState": "stale",
       "localizations": {
@@ -133,6 +165,17 @@
       }
     },
     "Kimi Web": {},
+    "Kimi Web 卡片": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kimi Web Card"
+          }
+        }
+      }
+    },
     "Kimi Web 运行版本 %1$@ 低于已安装版本 %2$@，建议重启服务。": {
       "extractionState": "stale",
       "localizations": {
@@ -203,6 +246,17 @@
     },
     "KimiCode CLI": {},
     "KimiCode CLI %@": {},
+    "KimiCode CLI 版本号": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KimiCode CLI Version"
+          }
+        }
+      }
+    },
     "KimiCode 有新版本": {
       "extractionState": "stale",
       "localizations": {
@@ -233,6 +287,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "KimiCodeBar is fully open source with transparent code. Stars, issues, and contributions are welcome—help make it better."
+          }
+        }
+      }
+    },
+    "KimiCodeBar 版本行": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KimiCodeBar Version Row"
           }
         }
       }
@@ -313,6 +378,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "A usage monitor designed for Kimi Code. It lives in your menu bar and keeps your limits at a glance."
+          }
+        }
+      }
+    },
+    "今日": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "今日使用 Token": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Token Used Today"
           }
         }
       }
@@ -449,6 +536,28 @@
         }
       }
     },
+    "加油包余额卡片": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Booster Pack Card"
+          }
+        }
+      }
+    },
+    "勾选要在菜单栏面板中显示的内容，取消勾选可隐藏对应卡片。设置即时生效。": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the items you want to show in the menu bar panel. Uncheck to hide the corresponding card. Changes take effect immediately."
+          }
+        }
+      }
+    },
     "单行": {
       "extractionState": "stale",
       "localizations": {
@@ -522,6 +631,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "New Version Available"
+          }
+        }
+      }
+    },
+    "发现新版本时会强制显示": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always shown when a new version is available"
+          }
+        }
+      }
+    },
+    "发现更新": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update Available"
           }
         }
       }
@@ -665,6 +796,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Install Update"
+          }
+        }
+      }
+    },
+    "官方砍掉了 server 服务，临时弃用。": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The official server service was removed. Temporarily deprecated."
           }
         }
       }
@@ -1175,6 +1317,17 @@
         }
       }
     },
+    "暂无会话记录": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Session Records"
+          }
+        }
+      }
+    },
     "暂无已安装技能": {
       "extractionState": "stale",
       "localizations": {
@@ -1358,6 +1511,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Spent This Month"
+          }
+        }
+      }
+    },
+    "本机消耗量": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local Consumption"
+          }
+        }
+      }
+    },
+    "本机消耗量卡片": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local Consumption Card"
           }
         }
       }
@@ -1681,6 +1856,39 @@
         }
       }
     },
+    "累计": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total"
+          }
+        }
+      }
+    },
+    "累计使用 Token": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total Token Used"
+          }
+        }
+      }
+    },
+    "缓存命中率": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cache Hit Rate"
+          }
+        }
+      }
+    },
     "网络错误：%@": {
       "extractionState": "stale",
       "localizations": {
@@ -1704,6 +1912,7 @@
       }
     },
     "获取 API Key": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1797,6 +2006,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Running"
+          }
+        }
+      }
+    },
+    "近 30 天暂无记录": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Records in Last 30 Days"
           }
         }
       }
@@ -1900,6 +2120,17 @@
         }
       }
     },
+    "面板自定义": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panel Customization"
+          }
+        }
+      }
+    },
     "额度刷新间隔": {
       "extractionState": "stale",
       "localizations": {
@@ -1933,90 +2164,113 @@
         }
       }
     },
-    "面板自定义": {
-      "extractionState": "stale",
+    "%1$@ API 返回错误（%2$@）：%3$@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Panel Customization"
+            "value": "%1$@ API error (%2$@): %3$@"
           }
         }
       }
     },
-    "加油包余额卡片": {
-      "extractionState": "stale",
+    "%@ 余额": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Booster Pack Card"
+            "value": "%@ Balance"
           }
         }
       }
     },
-    "Kimi Web 卡片": {
-      "extractionState": "stale",
+    "API Key 无效，请检查是否已正确配置": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kimi Web Card"
+            "value": "Invalid API Key, please check configuration"
           }
         }
       }
     },
-    "官方砍掉了 server 服务，临时弃用。": {
-      "extractionState": "stale",
+    "不可用": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The official server service was removed. Temporarily deprecated."
+            "value": "Unavailable"
           }
         }
       }
     },
-    "KimiCode CLI 版本号": {
+    "使用 Token": {
       "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "KimiCode CLI Version"
+            "value": "Token Used"
           }
         }
       }
     },
-    "勾选要在菜单栏面板中显示的内容，取消勾选可隐藏对应卡片。设置即时生效。": {
-      "extractionState": "stale",
+    "充值余额": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Check the items you want to show in the menu bar panel. Uncheck to hide the corresponding card. Changes take effect immediately."
+            "value": "Topped-up Balance"
           }
         }
       }
     },
-    "KimiCodeBar 版本行": {
-      "extractionState": "stale",
+    "前往 %@ 控制台创建并复制 API Key。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "KimiCodeBar Version Row"
+            "value": "Go to the %@ console to create and copy your API Key."
           }
         }
       }
     },
-    "发现更新": {
-      "extractionState": "stale",
+    "去控制台查看": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Update Available"
+            "value": "View in Console"
+          }
+        }
+      }
+    },
+    "可用": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Available"
+          }
+        }
+      }
+    },
+    "未配置": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not configured"
+          }
+        }
+      }
+    },
+    "未配置 API Key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API Key not configured"
           }
         }
       }
@@ -2043,129 +2297,12 @@
         }
       }
     },
-    "累计": {
-      "extractionState": "stale",
+    "请在设置中配置 API Key": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Total"
-          }
-        }
-      }
-    },
-    "今日": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today"
-          }
-        }
-      }
-    },
-    "7天": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "7D"
-          }
-        }
-      }
-    },
-    "使用 Token": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Token Used"
-          }
-        }
-      }
-    },
-    "缓存命中率": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cache Hit Rate"
-          }
-        }
-      }
-    },
-    "暂无会话记录": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No Session Records"
-          }
-        }
-      }
-    },
-    "发现新版本时会强制显示": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Always shown when a new version is available"
-          }
-        }
-      }
-    },
-    "未配置 API Key": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "API Key not configured"
-          }
-        }
-      }
-    },
-    "API Key 无效，请检查是否已正确配置": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Invalid API Key, please check configuration"
-          }
-        }
-      }
-    },
-    "%@ 余额": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ Balance"
-          }
-        }
-      }
-    },
-    "可用": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Available"
-          }
-        }
-      }
-    },
-    "不可用": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unavailable"
+            "value": "Please configure API Key in Settings"
           }
         }
       }
@@ -2176,66 +2313,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Granted Balance"
-          }
-        }
-      }
-    },
-    "充值余额": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Topped-up Balance"
-          }
-        }
-      }
-    },
-    "%1$@ API 返回错误（%2$@）：%3$@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ API error (%2$@): %3$@"
-          }
-        }
-      }
-    },
-    "未配置": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not configured"
-          }
-        }
-      }
-    },
-    "去控制台查看": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "View in Console"
-          }
-        }
-      }
-    },
-    "前往 %@ 控制台创建并复制 API Key。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Go to the %@ console to create and copy your API Key."
-          }
-        }
-      }
-    },
-    "请在设置中配置 API Key": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Please configure API Key in Settings"
           }
         }
       }
