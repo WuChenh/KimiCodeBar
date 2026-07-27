@@ -61,7 +61,7 @@ App 支持应用内语言切换（跟随系统 / 中文 / English），机制见
 - App 版本读取 `macOS/KimiCodeBar/Info.plist` 的 `CFBundleShortVersionString`，代码中通过 `Bundle.main.infoDictionary?["CFBundleShortVersionString"]` 读取。
 - `Info.plist` 中的 `CFBundleShortVersionString` 已改为引用 `$(MARKETING_VERSION)`，发版前只需修改 `macOS/KimiCodeBar.xcodeproj/project.pbxproj` 的 `MARKETING_VERSION`。
 - GitHub Release tag 使用 `v{VERSION}` 格式，例如 `v1.0.0`。
-- App 内「查看更新」跳转到 `https://github.com/xifandev/KimiCodeBar/releases/`。
+- App 内「查看更新」跳转到 `https://github.com/WuChenh/KimiCodeBar/releases/`。
 
 ## Release Notes 规范
 

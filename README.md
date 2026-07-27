@@ -2,13 +2,14 @@
   <img src="Assets/logo.gif" width="55" alt="KimiCodeBar Logo" align="absmiddle">&nbsp;&nbsp;KimiCodeBar
 </h1>
 <p align="left">
-  <a href="https://github.com/xifandev/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.2.0-333333" alt="Version"></a>
+  <a href="https://github.com/WuChenh/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.2.0-333333" alt="Version"></a>
   <img src="https://img.shields.io/badge/macOS-333333?logo=apple&logoColor=white" alt="macOS">
-  <img src="https://img.shields.io/badge/-KIMI%E7%A4%BE%E5%8C%BA%E7%89%88-orange" alt="社区版">
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/xifandev/KimiCodeBar" alt="License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/WuChenh/KimiCodeBar" alt="License"></a>
 </p>
 
 [English](README_EN.md) | 中文
+
+> 本项目基于 [xifandev/KimiCodeBar](https://github.com/xifandev/KimiCodeBar) 分支开发，面向 macOS 原生体验全面重构。
 
 🌐 **官网：** [https://xifandev.github.io/KimiCodeBar/](https://xifandev.github.io/KimiCodeBar/)
 
@@ -16,9 +17,9 @@
 
 #
 
-#### 下载安装：<a href="https://github.com/xifandev/KimiCodeBar/releases">GitHub Releases</a>
+#### 下载安装：<a href="https://github.com/WuChenh/KimiCodeBar/releases">GitHub Releases</a>
 
-#### 欢迎提交：<a href="https://github.com/xifandev/KimiCodeBar/issues">Issues</a> 反馈问题或建议
+#### 欢迎提交：<a href="https://github.com/WuChenh/KimiCodeBar/issues">Issues</a> 反馈问题或建议
 
 #
 
@@ -63,11 +64,4 @@
 
 #
 
-### 欢迎提交 👉 <a href="https://github.com/xifandev/KimiCodeBar/issues">Issues</a> 反馈问题或建议
-
-#
-
-###
-
-  <img src="https://img.shields.io/badge/-KIMI%E7%A4%BE%E5%8C%BA%E7%89%88-orange" alt="社区版">
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/xifandev/KimiCodeBar" alt="License"></a>
+### 欢迎提交 👉 <a href="https://github.com/WuChenh/KimiCodeBar/issues">Issues</a> 反馈问题或建议

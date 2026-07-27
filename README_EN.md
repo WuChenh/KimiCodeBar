@@ -2,13 +2,14 @@
   <img src="Assets/logo.gif" width="55" alt="KimiCodeBar Logo" align="absmiddle">&nbsp;&nbsp;KimiCodeBar
 </h1>
 <p align="left">
-  <a href="https://github.com/xifandev/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.2.0-333333" alt="Version"></a>
+  <a href="https://github.com/WuChenh/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.2.0-333333" alt="Version"></a>
   <img src="https://img.shields.io/badge/macOS-333333?logo=apple&logoColor=white" alt="macOS">
-  <img src="https://img.shields.io/badge/-KIMI%20Community%20Edition-orange" alt="Community Edition">
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/xifandev/KimiCodeBar" alt="License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/WuChenh/KimiCodeBar" alt="License"></a>
 </p>
 
 [中文](README.md) | English
+
+> This project is a fork of [xifandev/KimiCodeBar](https://github.com/xifandev/KimiCodeBar), fully redesigned for a native macOS experience.
 
 🌐 **Website:** [https://xifandev.github.io/KimiCodeBar/](https://xifandev.github.io/KimiCodeBar/)
 
@@ -16,9 +17,9 @@ A lightweight usage monitoring tool built for [Kimi Code](https://www.kimi.com/c
 
 #
 
-#### Download: <a href="https://github.com/xifandev/KimiCodeBar/releases">GitHub Releases</a>
+#### Download: <a href="https://github.com/WuChenh/KimiCodeBar/releases">GitHub Releases</a>
 
-#### Feedback: <a href="https://github.com/xifandev/KimiCodeBar/issues">Issues</a>
+#### Feedback: <a href="https://github.com/WuChenh/KimiCodeBar/issues">Issues</a>
 
 #
 
@@ -63,11 +64,4 @@ All data is stored locally. APIs only communicate with official Kimi / DeepSeek 
 
 #
 
-### Feedback 👉 <a href="https://github.com/xifandev/KimiCodeBar/issues">Issues</a>
-
-#
-
-###
-
-  <img src="https://img.shields.io/badge/-KIMI%20Community%20Edition-orange" alt="Community Edition">
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/xifandev/KimiCodeBar" alt="License"></a>
+### Feedback 👉 <a href="https://github.com/WuChenh/KimiCodeBar/issues">Issues</a>

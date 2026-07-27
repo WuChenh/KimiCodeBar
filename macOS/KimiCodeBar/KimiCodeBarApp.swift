@@ -155,12 +155,24 @@ struct KimiLabel: View {
   @StateObject private var languageManager = LanguageManager.shared
 
   var body: some View {
-    if model.selectedProvider == .kimi, let quota = model.quota {
+    let showKimi = model.showKimiMenuBar && model.quota != nil
+    let showDS = model.showDeepseekMenuBar
+
+    if showKimi && showDS {
+      // 两者都显示：组合渲染
+      Image(
+        nsImage: MenuBarTextRenderer.combinedImage(
+          scheme: model.menuBarDisplayScheme,
+          weekly: model.quota?.weekly.percentage ?? 0,
+          fiveHour: model.quota?.fiveHour.percentage ?? 0,
+          deepseekText: model.deepseekMenuBarText
+        ))
+    } else if showKimi {
       Image(
         nsImage: MenuBarTextRenderer.image(
           scheme: model.menuBarDisplayScheme,
-          weekly: quota.weekly.percentage,
-          fiveHour: quota.fiveHour.percentage
+          weekly: model.quota?.weekly.percentage ?? 0,
+          fiveHour: model.quota?.fiveHour.percentage ?? 0
         ))
     } else {
       Text(model.text)
@@ -218,6 +230,26 @@ enum MenuBarTextRenderer {
     case .singleLine:
       return singleLineImage(weekly: weekly, fiveHour: fiveHour)
     }
+  }
+
+  /// 组合渲染：Kimi 百分比 + DeepSeek 文本，菜单栏同时显示两个平台
+  static func combinedImage(
+    scheme: MenuBarDisplayScheme, weekly: Int, fiveHour: Int, deepseekText: String
+  ) -> NSImage {
+    let kimiImage = image(scheme: scheme, weekly: weekly, fiveHour: fiveHour)
+
+    let content = HStack(spacing: 4) {
+      Image(nsImage: kimiImage)
+      Text(deepseekText)
+        .font(.system(size: 11, weight: .medium, design: .rounded))
+        .monospacedDigit()
+        .fixedSize()
+    }
+    .foregroundStyle(textColor)
+    .frame(height: 20)
+    .fixedSize(horizontal: true, vertical: false)
+
+    return render(content)
   }
 
   /// 原始紧凑样式：48pt 宽，两行 7D/5H。
@@ -576,7 +608,7 @@ struct AppUpdateRow: View {
   }
 
   private func openGitHubReleases() {
-    if let url = URL(string: "https://github.com/xifandev/KimiCodeBar/releases/") {
+    if let url = URL(string: "https://github.com/WuChenh/KimiCodeBar/releases/") {
       NSWorkspace.shared.open(url)
     }
   }
@@ -594,8 +626,7 @@ struct KimiMenu: View {
   @State private var kimiServerOperation: KimiServerOperation = .none
   @State private var isKimiServerRestartHintDismissed = false
 
-  private let consoleURL = URL(string: "https://www.kimi.com/code/console")!
-  private let githubURL = URL(string: "https://github.com/xifandev/KimiCodeBar")!
+    private let consoleURL = URL(string: "https://www.kimi.com/code/console")!
 
   /// CLI 版本行显示条件：用户开启，或检测到 CLI 新版本时强制显示（无视隐藏设置）
   private var shouldShowKimiVersionRow: Bool {
@@ -615,36 +646,41 @@ struct KimiMenu: View {
     }
   }
 
-  // MARK: - 平台 Tab 切换栏
+  // MARK: - 平台区域标题
 
-  private var providerTabBar: some View {
-    HStack(spacing: 6) {
-      ForEach(ProviderType.allCases) { provider in
-        providerTab(provider)
+  private func providerSectionHeader(
+    name: String, icon: String?, consoleURL: URL?, isLoading: Bool
+  ) -> some View {
+    HStack(spacing: 8) {
+      if let icon {
+        Image(systemName: icon)
+          .font(.system(size: 13, weight: .medium))
+      }
+      Text(name)
+        .font(.system(size: 13, weight: .semibold))
+        .foregroundStyle(.kimiTextPrimary)
+
+      if isLoading {
+        ProgressView()
+          .controlSize(.small)
+          .scaleEffect(0.7)
+      }
+
+      Spacer()
+
+      if let url = consoleURL {
+        Button(action: {
+          dismissMenuBarPanel()
+          NSWorkspace.shared.open(url)
+        }) {
+          Image(systemName: "arrow.up.forward")
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(.kimiTextTertiary)
+        }
+        .buttonStyle(.plain)
+        .cursor(.pointingHand)
       }
     }
-    .padding(4)
-    .background(.regularMaterial)
-    .clipShape(RoundedRectangle(cornerRadius: 10))
-  }
-
-  private func providerTab(_ provider: ProviderType) -> some View {
-    let isSelected = model.selectedProvider == provider
-    return Button(action: {
-      model.selectedProvider = provider
-    }) {
-      LText(provider.displayName)
-        .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
-        .foregroundStyle(isSelected ? .kimiTextPrimary : .kimiTextSecondary)
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 6)
-        .background(
-          RoundedRectangle(cornerRadius: 7)
-            .fill(isSelected ? Color.kimiTextPrimary.opacity(0.10) : .clear)
-        )
-    }
-    .buttonStyle(.plain)
-    .cursor(.pointingHand)
   }
 
   // MARK: - Kimi 用量内容
@@ -653,7 +689,7 @@ struct KimiMenu: View {
     Group {
       HStack(spacing: 12) {
         UsageCard(
-          title: languageManager.tr("本周用量"),
+          title: languageManager.tr("7天用量"),
           subtitle: nil,
           percentage: model.quota?.weekly.percentage ?? 0,
           reset: model.quota?.weekly.timeUntilReset ?? "--",
@@ -723,45 +759,27 @@ struct KimiMenu: View {
           .foregroundStyle(.kimiTextPrimary)
 
         Spacer()
-
-        // 检测到 App 新版本时版本行会强制显示（见 shouldShowAppUpdateRow），
-        // header 恒定显示社区版按钮，不再替换为「发现更新」（AppUpdateBadgeButton 实现保留备用）
-        CommunityButton(url: githubURL)
       }
-
-      // 平台切换 Tab
-      providerTabBar
 
       // 用量内容
       VStack(spacing: 12) {
-        switch model.selectedProvider {
-        case .kimi:
+        if model.showKimiProvider {
           kimiUsageContent
-        case .deepseek:
+        }
+        if model.showDeepseekProvider {
           deepseekBalanceContent
         }
 
       }
 
-      // 操作按钮卡片
+      // 操作按钮
       HStack(spacing: 8) {
-        ActionButton(
-          title: languageManager.tr("控制台"),
-          icon: model.selectedProvider == .kimi ? nil : "safari",
-          textIcon: model.selectedProvider == .kimi ? "KIMI" : nil,
-          action: {
-            dismissMenuBarPanel()
-            if let url = model.selectedProvider.consoleURL {
-              NSWorkspace.shared.open(url)
-            }
-          }
-        )
-
         ActionButton(
           title: languageManager.tr("刷新"),
           icon: "arrow.clockwise",
           action: { model.refreshAll() },
-          disabled: !model.hasCredential || (model.isLoading && model.selectedProvider == .kimi)
+          disabled: (!model.hasKimiCredential && !model.hasDeepseekCredential)
+            || (model.isLoading && model.deepseekState.isLoading)
         )
 
         ActionButton(
@@ -779,7 +797,7 @@ struct KimiMenu: View {
       }
 
       // KimiCode CLI 版本行：仅 Kimi 平台时显示；检测到新版本时无视设置强制显示
-      if model.selectedProvider == .kimi && shouldShowKimiVersionRow {
+      if model.showKimiProvider && shouldShowKimiVersionRow {
         HStack(alignment: .center, spacing: 10) {
           Text("KimiCode CLI")
             .font(.system(size: 13, weight: .medium))
@@ -845,7 +863,7 @@ struct KimiMenu: View {
       }
 
       // KimiCodeBar 版本行：仅 Kimi 平台时显示；检测到新版本时无视设置强制显示
-      if model.selectedProvider == .kimi && shouldShowAppUpdateRow {
+      if model.showKimiProvider && shouldShowAppUpdateRow {
         AppUpdateRow()
       }
     }
@@ -853,7 +871,7 @@ struct KimiMenu: View {
     .frame(width: 340)
     .background(.ultraThinMaterial)
     .overlay {
-      if model.selectedProvider == .kimi && !model.hasCredential {
+      if model.showKimiProvider && !model.hasKimiCredential {
         LoginOverlayView(isMenuVisible: isMenuVisible)
       }
     }
@@ -863,39 +881,32 @@ struct KimiMenu: View {
       if model.pendingUpdateVersion != nil {
         showUpdateAlert = true
       }
-      if model.selectedProvider == .kimi {
-        Task {
-          await model.loadKimiVersion()
-          await model.checkForKimiCLIUpdate()
-          if model.pendingUpdateVersion == nil {
-            showUpdateAlert = false
-          }
+      Task {
+        await model.loadKimiVersion()
+        await model.checkForKimiCLIUpdate()
+        if model.pendingUpdateVersion == nil {
+          showUpdateAlert = false
         }
       }
       model.refreshCurrentProvider(showsLoading: false)
+      model.refreshDeepseek()
     }
     .onChange(of: isMenuVisible) { _, isVisible in
       if isVisible {
         isKimiServerRestartHintDismissed = false
-        if model.selectedProvider == .kimi {
-          Task { await model.refreshKimiServerState() }
-        }
-        // 面板打开立即刷新当前平台数据
+        Task { await model.refreshKimiServerState() }
         model.refreshCurrentProvider(showsLoading: false)
-        // 面板打开时探测 App 新版本
-        // 面板打开时扫描一次本机消耗量（后台线程，3 分钟节流）
+        model.refreshDeepseek()
         KimiLocalUsageService.shared.refreshIfNeeded()
         model.checkCachedKimiUpdate()
         if model.pendingUpdateVersion != nil {
           showUpdateAlert = true
         }
-        if model.selectedProvider == .kimi {
-          Task {
-            await model.loadKimiVersion()
-            await model.checkForKimiCLIUpdate()
-            if model.pendingUpdateVersion == nil {
-              showUpdateAlert = false
-            }
+        Task {
+          await model.loadKimiVersion()
+          await model.checkForKimiCLIUpdate()
+          if model.pendingUpdateVersion == nil {
+            showUpdateAlert = false
           }
         }
       }
@@ -1635,38 +1646,6 @@ struct LinkRow: View {
   }
 }
 
-struct CommunityButton: View {
-  let url: URL
-  @State private var isHovered = false
-
-  var body: some View {
-    Button(action: {
-      dismissMenuBarPanel()
-      NSWorkspace.shared.open(url)
-    }) {
-      HStack(spacing: 6) {
-        Image("github-icon")
-          .renderingMode(.template)
-          .resizable()
-          .aspectRatio(contentMode: .fit)
-          .frame(width: 16, height: 16)
-
-        LText("社区版")
-          .font(.system(size: 13, weight: .medium))
-      }
-      .foregroundStyle(isHovered ? .kimiTextPrimary : .kimiTextSecondary)
-      .padding(.horizontal, 10)
-      .padding(.vertical, 6)
-      .glassEffectIfAvailable(in: .rect(cornerRadius: 8), isHovered: isHovered)
-    }
-    .buttonStyle(.plain)
-    .cursor(.pointingHand)
-    .onHover { hovering in
-      isHovered = hovering
-    }
-  }
-}
-
 // MARK: - 中文更新日志抓取
 
 func fetchLatestKimiVersion() async -> (version: String?, error: String?) {
@@ -2298,7 +2277,7 @@ struct UpdateErrorPopoverView: View {
             "## 检查更新接口错误反馈\n\n错误信息：\n```\n%1$@\n```\n\n请补充以下信息：\n- 当前 KimiCodeBar 版本：%2$@\n- 当前网络环境：\n- 问题描述：\n",
             arguments: [errorMessage, appVersion()])
           var components = URLComponents(
-            string: "https://github.com/xifandev/KimiCodeBar/issues/new")!
+            string: "https://github.com/WuChenh/KimiCodeBar/issues/new")!
           components.queryItems = [
             URLQueryItem(name: "title", value: LanguageManager.tr("检查更新接口错误反馈")),
             URLQueryItem(name: "body", value: body),
@@ -3091,6 +3070,44 @@ struct BasicSettingsView: View {
     )
   }
 
+  @ViewBuilder
+  private var menuBarPreview: some View {
+    let showKimi = model.showKimiMenuBar && model.quota != nil
+    let showDS = model.showDeepseekMenuBar
+    if showKimi && showDS {
+      Image(
+        nsImage: MenuBarTextRenderer.combinedImage(
+          scheme: model.menuBarDisplayScheme,
+          weekly: model.quota?.weekly.percentage ?? 0,
+          fiveHour: model.quota?.fiveHour.percentage ?? 0,
+          deepseekText: model.deepseekMenuBarText
+        ))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.black)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+    } else if showKimi {
+      Image(
+        nsImage: MenuBarTextRenderer.image(
+          scheme: model.menuBarDisplayScheme,
+          weekly: model.quota?.weekly.percentage ?? 0,
+          fiveHour: model.quota?.fiveHour.percentage ?? 0
+        ))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.black)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+    } else {
+      Text(model.text)
+        .font(.system(size: 12, weight: .medium, design: .rounded))
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.black)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+    }
+  }
+
   /// Token 登录方式下的 API Key 管理区域
   private var apiKeySection: some View {
     VStack(alignment: .leading, spacing: 0) {
@@ -3294,8 +3311,8 @@ struct BasicSettingsView: View {
           }
         }
 
-        // 菜单栏样式
-        SettingsCard(title: languageManager.tr("菜单栏样式")) {
+        // 菜单栏
+        SettingsCard(title: languageManager.tr("菜单栏")) {
           VStack(alignment: .leading, spacing: 0) {
             SettingsCardRow(title: languageManager.tr("显示样式")) {
               Picker("", selection: $model.menuBarDisplayScheme) {
@@ -3310,23 +3327,27 @@ struct BasicSettingsView: View {
 
             SettingsCardDivider()
             SettingsCardRow(title: languageManager.tr("实时预览")) {
-              if let quota = model.quota {
-                Image(
-                  nsImage: MenuBarTextRenderer.image(
-                    scheme: model.menuBarDisplayScheme,
-                    weekly: quota.weekly.percentage,
-                    fiveHour: quota.fiveHour.percentage
-                  )
-                )
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color.black)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-              } else {
-                Text("-- · --")
-                  .font(.system(size: 12, weight: .medium, design: .rounded))
-                  .foregroundStyle(.secondary)
-              }
+              menuBarPreview
+            }
+
+            SettingsCardDivider()
+            SettingsCardRow(
+              title: languageManager.tr("Kimi 用量")
+            ) {
+              Toggle("", isOn: $model.showKimiMenuBar)
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .cursor(.pointingHand)
+            }
+
+            SettingsCardDivider()
+            SettingsCardRow(
+              title: languageManager.tr("DeepSeek 余额")
+            ) {
+              Toggle("", isOn: $model.showDeepseekMenuBar)
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .cursor(.pointingHand)
             }
           }
         }
@@ -3495,7 +3516,7 @@ struct PanelCustomSettingsView: View {
             .font(.system(size: 22, weight: .bold))
             .foregroundStyle(.kimiTextPrimary)
 
-          LText("勾选要在菜单栏面板中显示的内容，取消勾选可隐藏对应卡片。设置即时生效。")
+          LText("勾选要在菜单栏面板中显示的内容，取消勾选可隐藏对应卡片。菜单栏样式请在基本设置中调整。")
             .font(.system(size: 13))
             .foregroundStyle(.kimiTextSecondary)
         }
@@ -3517,6 +3538,29 @@ struct PanelCustomSettingsView: View {
               title: languageManager.tr("本机消耗量卡片")
             ) {
               Toggle("", isOn: $model.showLocalUsageCard)
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .cursor(.pointingHand)
+            }
+
+            SettingsCardDivider()
+
+            // 平台显示开关
+            SettingsCardRow(
+              title: languageManager.tr("Kimi 用量")
+            ) {
+              Toggle("", isOn: $model.showKimiProvider)
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .cursor(.pointingHand)
+            }
+
+            SettingsCardDivider()
+
+            SettingsCardRow(
+              title: languageManager.tr("DeepSeek 余额")
+            ) {
+              Toggle("", isOn: $model.showDeepseekProvider)
                 .labelsHidden()
                 .toggleStyle(.switch)
                 .cursor(.pointingHand)
@@ -3630,12 +3674,12 @@ struct AboutSettingsView: View {
                 title: "GitHub",
                 imageName: "github-icon",
                 imageSize: 16,
-                url: URL(string: "https://github.com/xifandev/KimiCodeBar")!
+                url: URL(string: "https://github.com/WuChenh/KimiCodeBar")!
               )
               LinkRow(
                 title: languageManager.tr("反馈问题"),
                 icon: "exclamationmark.bubble",
-                url: URL(string: "https://github.com/xifandev/KimiCodeBar/issues")!
+                url: URL(string: "https://github.com/WuChenh/KimiCodeBar/issues")!
               )
             }
             .padding(.top, 8)
@@ -3997,8 +4041,8 @@ struct GitHubCommunityCard: View {
   @State private var isHoveredRepo = false
   @State private var isHoveredIssue = false
 
-  private let repoURL = URL(string: "https://github.com/xifandev/KimiCodeBar")!
-  private let issuesURL = URL(string: "https://github.com/xifandev/KimiCodeBar/issues")!
+  private let repoURL = URL(string: "https://github.com/WuChenh/KimiCodeBar")!
+  private let issuesURL = URL(string: "https://github.com/WuChenh/KimiCodeBar/issues")!
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
@@ -4030,6 +4074,13 @@ struct GitHubCommunityCard: View {
               .background(Color.white.opacity(0.18))
               .clipShape(RoundedRectangle(cornerRadius: 5))
           }
+
+          LText("基于 xifandev/KimiCodeBar 的分支版本，面向 macOS 原生体验全面重构。")
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(.white.opacity(0.65))
+            .lineSpacing(2)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.top, 4)
 
           LText("KimiCodeBar 完全开源，代码公开透明。欢迎 Star、提交 Issue 或参与共建，让这款工具变得更好。")
             .font(.system(size: 13, weight: .medium))
@@ -4495,8 +4546,13 @@ final class KimiCodeBarModel: ObservableObject {
   @AppStorage("showKimiServerCard") var showKimiServerCard: Bool = true
   @AppStorage("showKimiVersionRow") var showKimiVersionRow: Bool = false
   @AppStorage("showAppUpdateRow") var showAppUpdateRow: Bool = false
+  @AppStorage("showKimiProvider") var showKimiProvider: Bool = true
+  @AppStorage("showDeepseekProvider") var showDeepseekProvider: Bool = true
+  @AppStorage("showKimiMenuBar") var showKimiMenuBar: Bool = true
+  @AppStorage("showDeepseekMenuBar") var showDeepseekMenuBar: Bool = false
 
-  @Published var text = "-- · --"
+  @Published var kimiMenuBarText = "-- · --"
+  @Published var deepseekMenuBarText = "--"
   @Published var quota: KimiQuota?
   @Published var errorMessage: String?
   @Published var isLoading = false
@@ -4522,6 +4578,14 @@ final class KimiCodeBarModel: ObservableObject {
     }
   }
   @Published var deepseekState = ProviderState()
+
+  /// 菜单栏文本：根据用户设置组合多个平台
+  var text: String {
+    var parts: [String] = []
+    if showKimiMenuBar { parts.append(kimiMenuBarText) }
+    if showDeepseekMenuBar { parts.append(deepseekMenuBarText) }
+    return parts.isEmpty ? "--" : parts.joined(separator: " · ")
+  }
 
   var hasCachedKimiUpdate: Bool {
     guard !cachedKimiLatestVersion.isEmpty, kimiVersion != LanguageManager.tr("未检测到"),
@@ -4550,16 +4614,17 @@ final class KimiCodeBarModel: ObservableObject {
   private var timer: Timer?
   private var updateTimer: Timer?
 
-  /// 当前选中平台是否有可用凭证
-  var hasCredential: Bool {
-    switch selectedProvider {
-    case .kimi:
-      switch loginMethod {
-      case .token: return !key.isEmpty
-      case .oauth: return oauthToken != nil
-      }
-    case .deepseek: return !deepseekKey.isEmpty
+  /// Kimi 平台是否有可用凭证
+  var hasKimiCredential: Bool {
+    switch loginMethod {
+    case .token: return !key.isEmpty
+    case .oauth: return oauthToken != nil
     }
+  }
+
+  /// DeepSeek 平台是否有可用凭证
+  var hasDeepseekCredential: Bool {
+    !deepseekKey.isEmpty
   }
 
   /// 当前选中平台的 API Key（Token 登录模式或非 Kimi 平台）
@@ -4631,7 +4696,7 @@ final class KimiCodeBarModel: ObservableObject {
             self.isLoading = false
           }
           self.quota = nil
-          self.text = LanguageManager.tr("未登录")
+          self.kimiMenuBarText = LanguageManager.tr("未登录")
         }
         return
       }
@@ -4651,12 +4716,12 @@ final class KimiCodeBarModel: ObservableObject {
         switch result {
         case .success(let quota):
           self.quota = quota
-          self.text = LanguageManager.tr(
-            "周 %1$d%% · 5h %2$d%%", arguments: [quota.weekly.percentage, quota.fiveHour.percentage])
+          self.kimiMenuBarText = LanguageManager.tr(
+            "7D %1$d%% · 5H %2$d%%", arguments: [quota.weekly.percentage, quota.fiveHour.percentage])
           self.errorMessage = nil
         case .failure(let error):
           if self.quota == nil {
-            self.text = "--"
+            self.kimiMenuBarText = "--"
           }
           self.errorMessage = kimiErrorDescription(error)
         }
@@ -4668,7 +4733,7 @@ final class KimiCodeBarModel: ObservableObject {
   private func refreshDeepSeek(showsLoading: Bool = true) {
     guard !deepseekKey.isEmpty else {
       deepseekState = ProviderState(errorMessage: LanguageManager.tr("未配置 API Key"))
-      text = "DS --"
+      deepseekMenuBarText = "DS --"
       return
     }
 
@@ -4686,11 +4751,11 @@ final class KimiCodeBarModel: ObservableObject {
           deepseekState.balance = balance
           deepseekState.errorMessage = nil
           let amount = formatBalanceShort(balance.totalBalance)
-          text = "DS \(amount)"
+          deepseekMenuBarText = "DS \(amount)"
         case .failure(let error):
           deepseekState.errorMessage = providerErrorDescription(error, provider: .deepseek)
           if deepseekState.balance == nil {
-            text = "DS --"
+            deepseekMenuBarText = "DS --"
           }
         }
       }
@@ -4701,7 +4766,7 @@ final class KimiCodeBarModel: ObservableObject {
     if amount >= 1000 {
       return String(format: "%.1fk", amount / 1000)
     }
-    return String(format: "%.0f", amount)
+    return String(format: "%.2f", amount)
   }
 
   private func providerErrorDescription(_ error: ProviderError, provider: ProviderType) -> String {
@@ -4722,10 +4787,16 @@ final class KimiCodeBarModel: ObservableObject {
 
   func refreshAll() {
     refreshCurrentProvider()
+    refreshDeepseek()
     Task {
       await checkForKimiCLIUpdate()
       await refreshKimiServerState()
     }
+  }
+
+  /// 拉取 DeepSeek 余额（公开入口）
+  func refreshDeepseek() {
+    refreshDeepSeek(showsLoading: false)
   }
 
   /// 根据当前登录方式解析 Bearer 凭证。
@@ -4840,7 +4911,7 @@ final class KimiCodeBarModel: ObservableObject {
     oauthToken = nil
     KimiOAuthService.clearToken()
     quota = nil
-    text = LanguageManager.tr("未登录")
+    kimiMenuBarText = LanguageManager.tr("未登录")
     errorMessage = nil
   }
 

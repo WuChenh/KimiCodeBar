@@ -107,57 +107,78 @@ final class KimiCodeBarQuotaService {
   }
 
   private func parse(_ data: Data) -> KimiQuota? {
-    struct Response: Codable {
-      struct Usage: Codable {
-        let limit: String?
-        let used: String?
-        let remaining: String?
-        let resetTime: String?
-      }
-      struct Limit: Codable {
-        struct Window: Codable { let duration: Int }
-        struct Detail: Codable {
+    struct Response: Decodable {
+        struct Usage: Codable {
           let limit: String?
           let used: String?
           let remaining: String?
           let resetTime: String?
         }
-        let window: Window
-        let detail: Detail
-      }
-      struct TotalQuota: Codable {
-        let limit: String?
-        let remaining: String?
-      }
-      struct User: Codable {
-        struct Membership: Codable {
-          let level: String?
+        struct Limit: Codable {
+          struct Window: Codable { let duration: Int }
+          struct Detail: Codable {
+            let limit: String?
+            let used: String?
+            let remaining: String?
+            let resetTime: String?
+          }
+          let window: Window
+          let detail: Detail
         }
-        let membership: Membership?
-      }
-      struct BoosterWallet: Codable {
-        struct Money: Codable {
-          let currency: String?
-          let priceInCents: String?
+        struct TotalQuota: Codable {
+          let limit: String?
+          let remaining: String?
         }
-        struct Balance: Codable {
-          let amount: String?
-          let amountLeft: String?
-          let unit: String?
+        struct User: Codable {
+          struct Membership: Codable {
+            let level: String?
+          }
+          let membership: Membership?
         }
-        let status: String?
-        let balance: Balance?
-        let monthlyChargeLimitEnabled: Bool?
-        let monthlyChargeLimit: Money?
-        let monthlyUsed: Money?
-        let topupLimit: Money?
+        struct BoosterWallet: Codable {
+          struct Money: Codable {
+            let currency: String?
+            let priceInCents: String?
+          }
+          struct Balance: Codable {
+            let amount: String?
+            let amountLeft: String?
+            let unit: String?
+          }
+          let status: String?
+          let balance: Balance?
+          let monthlyChargeLimitEnabled: Bool?
+          let monthlyChargeLimit: Money?
+          let monthlyUsed: Money?
+          let topupLimit: Money?
+        }
+        let usage: Usage?
+        let limits: [Limit]?
+        let totalQuota: TotalQuota?
+        let user: User?
+        let boosterWallet: BoosterWallet?
+
+        init(from decoder: Decoder) throws {
+          let container = try decoder.container(keyedBy: CodingKeys.self)
+          usage = try container.decodeIfPresent(Usage.self, forKey: .usage)
+          limits = try container.decodeIfPresent([Limit].self, forKey: .limits)
+          user = try container.decodeIfPresent(User.self, forKey: .user)
+          boosterWallet = try container.decodeIfPresent(BoosterWallet.self, forKey: .boosterWallet)
+          // 兼容 camelCase (totalQuota) 和 snake_case (total_quota)
+          if let quota = try? container.decodeIfPresent(TotalQuota.self, forKey: .totalQuota) {
+            totalQuota = quota
+          } else {
+            totalQuota = try? container.decodeIfPresent(TotalQuota.self, forKey: .totalQuotaSnake)
+          }
+        }
+
+        enum CodingKeys: String, CodingKey {
+          case usage, limits, user
+          case totalQuota
+          case totalQuotaSnake = "total_quota"
+          case boosterWallet
+        }
       }
-      let usage: Usage?
-      let limits: [Limit]?
-      let totalQuota: TotalQuota?
-      let user: User?
-      let boosterWallet: BoosterWallet?
-    }
 
     guard let resp = try? JSONDecoder().decode(Response.self, from: data) else {
       return nil
