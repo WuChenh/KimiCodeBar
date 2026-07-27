@@ -71,7 +71,8 @@ jobs:
       - name: Package DMG
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          DMG_NAME="KimiCodeBar-${VERSION}-macOS.dmg"
+          ARCH=$(uname -m)
+          DMG_NAME="KimiCodeBar-${VERSION}-macOS-${ARCH}.dmg"
           create-dmg \
             --volname "KimiCodeBar" \
             --window-pos 200 120 \
@@ -86,7 +87,7 @@ jobs:
       - name: Sign DMG
         if: steps.signing.outputs.configured == 'true'
         run: |
-          codesign --force --timestamp --options runtime --sign "Developer ID Application" dist/KimiCodeBar-*-macOS.dmg
+          codesign --force --timestamp --options runtime --sign "Developer ID Application" dist/KimiCodeBar-*-macOS-*.dmg
 
       - name: Notarize
         if: steps.signing.outputs.configured == 'true'
@@ -95,7 +96,7 @@ jobs:
           NOTARIZATION_TEAM_ID: ${{ secrets.NOTARIZATION_TEAM_ID }}
           NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
         run: |
-          DMG_PATH=$(ls dist/KimiCodeBar-*-macOS.dmg | head -1)
+          DMG_PATH=$(ls dist/KimiCodeBar-*-macOS-*.dmg | head -1)
           set +e
           set -o pipefail
           xcrun notarytool submit "$DMG_PATH" \
@@ -124,7 +125,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
-          files: dist/KimiCodeBar-*-macOS.dmg
+          files: dist/KimiCodeBar-*-macOS-*.dmg
           body_path: CHANGELOG.md
 
       - name: Cleanup keychain

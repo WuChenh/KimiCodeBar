@@ -2,7 +2,7 @@
   <img src="Assets/logo.gif" width="55" alt="KimiCodeBar Logo" align="absmiddle">&nbsp;&nbsp;KimiCodeBar
 </h1>
 <p align="left">
-  <a href="https://github.com/WuChenh/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.2.1-333333" alt="Version"></a>
+  <a href="https://github.com/WuChenh/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.2.3-333333" alt="Version"></a>
   <img src="https://img.shields.io/badge/macOS-333333?logo=apple&logoColor=white" alt="macOS">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/WuChenh/KimiCodeBar" alt="License"></a>
 </p>
@@ -18,6 +18,11 @@ A lightweight usage monitoring tool built for [Kimi Code](https://www.kimi.com/c
 #
 
 #### Download: <a href="https://github.com/WuChenh/KimiCodeBar/releases">GitHub Releases</a>
+
+> **Run this command before launching to bypass the unsigned app warning:**
+> ```bash
+> xattr -cr /Applications/KimiCodeBar.app
+> ```
 
 #### Feedback: <a href="https://github.com/WuChenh/KimiCodeBar/issues">Issues</a>
 
