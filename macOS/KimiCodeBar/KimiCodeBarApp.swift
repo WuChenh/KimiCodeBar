@@ -2354,13 +2354,13 @@ final class SettingsWindowManager {
     }
 
     let window = NSWindow(
-      contentRect: NSRect(x: 0, y: 0, width: 735, height: 560),
+      contentRect: NSRect(x: 0, y: 0, width: 820, height: 640),
       styleMask: [.titled, .closable, .miniaturizable, .resizable],
       backing: .buffered,
       defer: false
     )
     window.title = LanguageManager.tr("KimiCode Bar 设置")
-    window.minSize = NSSize(width: 600, height: 520)
+    window.minSize = NSSize(width: 680, height: 560)
     window.collectionBehavior = [.managed, .canJoinAllSpaces]
     window.level = .floating
     window.titlebarAppearsTransparent = true
