@@ -19,6 +19,10 @@
 		7B1CA15E00000000000000000000A1 /* KimiLocalUsage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1CA15E00000000000000000000A2 /* KimiLocalUsage.swift */; };
 		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D5 /* ProviderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */; };
 		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D7 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D8 /* KeychainHelper.swift */; };
+		C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F5 /* KimiCodeBarModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F6 /* KimiCodeBarModel.swift */; };
+		D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A6 /* SettingsView.swift */; };
+		E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6 /* UpdateViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B7 /* UpdateViews.swift */; };
+		F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5 /* PanelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C6 /* PanelComponents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +41,10 @@
 		7B1CA15E00000000000000000000A2 /* KimiLocalUsage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiLocalUsage.swift; sourceTree = "<group>"; };
 		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderService.swift; sourceTree = "<group>"; };
 		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D8 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F6 /* KimiCodeBarModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiCodeBarModel.swift; sourceTree = "<group>"; };
+		D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B7 /* UpdateViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateViews.swift; sourceTree = "<group>"; };
+		F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C6 /* PanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelComponents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +87,10 @@
 				7A11B22C33D44E55F660123B /* LanguageManager.swift */,
 				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */,
 				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D8 /* KeychainHelper.swift */,
+				C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F6 /* KimiCodeBarModel.swift */,
+				D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A6 /* SettingsView.swift */,
+				E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B7 /* UpdateViews.swift */,
+				F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C6 /* PanelComponents.swift */,
 				510792D7AE86479585E4504C /* Assets.xcassets */,
 				7A11B22C33D44E55F660123D /* Localizable.xcstrings */,
 				7D9C37304A73482ABB4CDE4D /* KimiCodeBar.entitlements */,
@@ -170,6 +182,10 @@
 				7A11B22C33D44E55F660123A /* LanguageManager.swift in Sources */,
 				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D5 /* ProviderService.swift in Sources */,
 				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D7 /* KeychainHelper.swift in Sources */,
+				C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F5 /* KimiCodeBarModel.swift in Sources */,
+				D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5 /* SettingsView.swift in Sources */,
+				E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6 /* UpdateViews.swift in Sources */,
+				F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5 /* PanelComponents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,7 +200,7 @@
 				CODE_SIGN_ENTITLEMENTS = KimiCodeBar/KimiCodeBar.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 23;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_APP_INTENTS = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -198,7 +214,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.2;
+				MARKETING_VERSION = 1.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kimicodebar.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -214,7 +230,7 @@
 				CODE_SIGN_ENTITLEMENTS = KimiCodeBar/KimiCodeBar.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 23;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_APP_INTENTS = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -228,7 +244,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.2;
+				MARKETING_VERSION = 1.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kimicodebar.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

@@ -13,6 +13,7 @@ enum KeychainHelper {
       kSecAttrService as String: service,
       kSecAttrAccount as String: key,
       kSecValueData as String: data,
+      kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
     ]
     SecItemAdd(query as CFDictionary, nil)
   }

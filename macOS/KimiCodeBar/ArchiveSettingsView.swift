@@ -36,7 +36,7 @@ struct ArchiveSettingsView: View {
   @State private var filter: SessionFilter = .all
   @State private var showArchiveResult = false
   @State private var archiveResultCount = 0
-  @State private var collapsedGroups: Set<String> = []
+  @State private var expandedGroups: Set<String> = []
 
   private var now: Date { Date() }
 
@@ -206,19 +206,19 @@ struct ArchiveSettingsView: View {
             } else {
               LazyVStack(alignment: .leading, spacing: 0) {
                 ForEach(groupedSessions) { group in
-                  let isCollapsed = collapsedGroups.contains(group.id)
+                  let isExpanded = expandedGroups.contains(group.id)
                   WorkspaceHeader(
                     name: group.name, count: group.sessions.count,
-                    isCollapsed: isCollapsed
+                    isCollapsed: !isExpanded
                   ) {
-                    if isCollapsed {
-                      collapsedGroups.remove(group.id)
+                    if isExpanded {
+                      expandedGroups.remove(group.id)
                     } else {
-                      collapsedGroups.insert(group.id)
+                      expandedGroups.insert(group.id)
                     }
                   }
 
-                  if !isCollapsed {
+                  if isExpanded {
                     ForEach(group.sessions) { session in
                       SessionRow(
                         session: session,
