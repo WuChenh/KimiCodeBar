@@ -3154,29 +3154,21 @@
         border: 1px solid rgba(45, 117, 246, 0.3);
       }
       .tl-body .tl-callout {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
         margin-top: 14px;
-        padding: 14px 16px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, rgba(45, 117, 246, 0.18), rgba(45, 117, 246, 0.06));
-        border: 1px solid rgba(45, 117, 246, 0.35);
-        border-left: 4px solid var(--blue-2);
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
         color: var(--text-2);
         font-size: 14.5px;
         line-height: 1.75;
       }
       .tl-body .tl-callout b {
-        color: var(--blue-2);
-        font-weight: 700;
+        color: var(--text);
+        font-weight: 600;
       }
       .tl-body .tl-callout-icon {
-        flex-shrink: 0;
-        width: 18px;
-        height: 18px;
-        margin-top: 3px;
-        color: var(--blue-2);
+        display: none;
       }
 
       /* 成果功能网格 */
@@ -3995,7 +3987,6 @@
                 手动打包发布太繁琐，还容易出错。所以搭了全自动流水线：<b>Sparkle</b> 做自动更新（后台静默下载 + EdDSA 签名校验），<b>Apple Developer ID 签名 + Notarization 公证</b>（安装不弹「无法验证开发者」），CI 用 <b>GitHub Actions</b> 单条流水线 build → sign → notarize → package →
                 release。维护者只需打 tag，全自动出签名公证后的安装包。
                 <div class="tl-callout">
-                  <i data-lucide="sparkles" class="tl-callout-icon"></i>
                   <span><b>GitHub Actions 强烈推荐新手一定要尝试！</b>例如我现在要发布该新版本，只需要跟 KimiCode 说一句「帮我发行下一个版本」，它就会自动打包自动公证，连更新日志也会自动帮你写好——<b>你真的什么都不需要去做</b>。</span>
                 </div>
               </div>
