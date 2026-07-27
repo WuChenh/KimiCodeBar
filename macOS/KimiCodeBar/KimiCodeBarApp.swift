@@ -117,6 +117,21 @@ struct KimiCodeBarApp: App {
 
 // MARK: - 配色
 
+extension Color {
+    init(light: Color, dark: Color) {
+        #if os(macOS)
+        self.init(nsColor: NSColor(name: nil) { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(dark) : NSColor(light)
+        })
+        #else
+        self.init(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+        })
+        #endif
+    }
+}
+
 extension ShapeStyle where Self == Color {
     /// Kimi 品牌蓝色
     static var kimiBlue: Color { Color(red: 0.23, green: 0.51, blue: 0.96) }
@@ -354,238 +369,158 @@ final class WindowVisibilityView: NSView {
     }
 }
 
-// MARK: - Kimi Code 图标（复刻 web 认证页 logo，含眨眼 + 左右看动画）
+// MARK: - Kimi Code 图标（纯 SwiftUI，眨眼 + 左右看动画）
 
-/// 用 Core Animation 直接驱动眼睛动画。
-/// 眼睛是独立的 CALayer，GPU 负责移动/缩放，不触发 SwiftUI 视图重算，
-/// 因此不会导致整个面板重新合成，CPU 占用极低。
 struct AnimatedKimiCodeLogo: View {
     var width: CGFloat = 44
     let isAnimating: Bool
 
+    private var scale: CGFloat { width / 32 }
+
     var body: some View {
-        KimiCodeLogoLayerViewWrapper(width: width, isAnimating: isAnimating)
-            .frame(width: width, height: width * 22 / 32)
+        let bodyW = 30 * scale
+        let bodyH = 20 * scale
+        let bodyR = 6 * scale
+        let eyeW = 2.8 * scale
+        let leftCX: CGFloat = 11.8 * scale + eyeW / 2
+        let rightCX: CGFloat = 17.4 * scale + eyeW / 2
+        let eyeCY: CGFloat = 11 * scale
+
+        ZStack {
+            RoundedRectangle(cornerRadius: bodyR)
+                .fill(Color.kimiBlue)
+                .shadow(color: Color.kimiBlue.opacity(0.35), radius: 8 * scale, x: 0, y: -3 * scale)
+                .frame(width: bodyW, height: bodyH)
+
+            KimiCodeEye(scale: scale, isAnimating: isAnimating)
+                .position(x: leftCX, y: eyeCY)
+
+            KimiCodeEye(scale: scale, isAnimating: isAnimating)
+                .position(x: rightCX, y: eyeCY)
+        }
+        .frame(width: 32 * scale, height: 22 * scale)
     }
 }
 
-struct KimiCodeLogoLayerViewWrapper: NSViewRepresentable {
-    let width: CGFloat
+private struct KimiCodeEye: View {
+    let scale: CGFloat
     let isAnimating: Bool
 
-    func makeNSView(context: Context) -> KimiCodeLogoLayerView {
-        let view = KimiCodeLogoLayerView(frame: NSRect(x: 0, y: 0, width: width, height: width * 22 / 32))
-        view.logoWidth = width
-        return view
+    @State private var blinkY: CGFloat = 1
+    @State private var lookX: CGFloat = 0
+    @State private var lookPhase = 0
+
+    private let amplitudeMultiplier: CGFloat = 5
+    private var eyeW: CGFloat { 2.8 * scale }
+    private var eyeH: CGFloat { 8 * scale }
+
+    var body: some View {
+        Capsule()
+            .fill(eyeColor)
+            .frame(width: eyeW, height: eyeH)
+            .scaleEffect(x: 1, y: blinkY)
+            .offset(x: lookX)
+            .animation(.easeInOut(duration: 0.08), value: blinkY)
+            .animation(.easeInOut(duration: 0.3), value: lookX)
+            .onAppear {
+                if isAnimating {
+                    startAnimations()
+                }
+            }
+            .onChange(of: isAnimating) { _, animating in
+                if animating {
+                    startAnimations()
+                } else {
+                    stopAnimations()
+                }
+            }
     }
 
-    func updateNSView(_ nsView: KimiCodeLogoLayerView, context: Context) {
-        nsView.logoWidth = width
-        nsView.setAnimationsPaused(!isAnimating)
+    private var eyeColor: Color {
+        Color(light: .white,
+              dark: Color(red: 24/255, green: 24/255, blue: 23/255))
+    }
+
+    // MARK: - Blink
+
+    private func startAnimations() {
+        scheduleBlink()
+        scheduleLook()
+    }
+
+    private func stopAnimations() {
+        blinkY = 1
+        lookX = 0
+        lookPhase = 0
+    }
+
+    private func scheduleBlink() {
+        // 每 3 秒一次眨眼，第一次随机偏移避免所有眼睛同步
+        let initialDelay = Double.random(in: 0..<3.0)
+        DispatchQueue.main.asyncAfter(deadline: .now() + initialDelay) {
+            performBlink()
+        }
+    }
+
+    private func performBlink() {
+        guard isAnimating else { return }
+
+        // 闭眼 0.08s
+        withAnimation(.easeOut(duration: 0.08)) { blinkY = 0.12 }
+
+        // 停留 0.04s 后睁眼
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            guard isAnimating else { return }
+            withAnimation(.easeIn(duration: 0.08)) { blinkY = 1 }
+        }
+
+        // 3 秒后再眨眼
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            performBlink()
+        }
+    }
+
+    // MARK: - Look Around
+
+    private func scheduleLook() {
+        guard isAnimating else { return }
+        let delay = Double.random(in: 1.0...3.0)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            performLook()
+        }
+    }
+
+    private func performLook() {
+        guard isAnimating else { return }
+        let amplitude = amplitudeMultiplier * scale
+        let targets: [CGFloat] = [amplitude, 0, -amplitude, 0]
+        let nextTarget = targets[lookPhase % targets.count]
+
+        withAnimation(.easeInOut(duration: 0.3)) {
+            lookX = nextTarget
+        }
+        lookPhase += 1
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            scheduleLook()
+        }
     }
 }
 
-final class KimiCodeLogoLayerView: NSView {
-    var logoWidth: CGFloat = 44 {
-        didSet { updateLayout() }
-    }
+// MARK: - macOS 26 Glass 效果适配
 
-    private let bodyLayer = CAShapeLayer()
-    private let leftEyeLayer = CAShapeLayer()
-    private let rightEyeLayer = CAShapeLayer()
-    private var isPaused = true
-    private var scale: CGFloat = 44.0 / 32.0
-
-    override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect)
-        setupLayers()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override var wantsUpdateLayer: Bool { true }
-
-    private func setupLayers() {
-        wantsLayer = true
-
-        let kimiBlue = NSColor(red: 0.23, green: 0.51, blue: 0.96, alpha: 1.0)
-
-        bodyLayer.fillColor = kimiBlue.cgColor
-        bodyLayer.shadowColor = kimiBlue.withAlphaComponent(0.35).cgColor
-        bodyLayer.shadowOpacity = 1
-        bodyLayer.shadowRadius = 8
-        bodyLayer.shadowOffset = CGSize(width: 0, height: -3)
-
-        updateEyeColors()
-
-        layer?.addSublayer(bodyLayer)
-        layer?.addSublayer(leftEyeLayer)
-        layer?.addSublayer(rightEyeLayer)
-
-        updateLayout()
-    }
-
-    private func updateEyeColors() {
-        let eyeColor = NSColor(name: nil, dynamicProvider: { appearance in
-            let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            return isDark
-                ? NSColor(red: 0x18 / 255.0, green: 0x18 / 255.0, blue: 0x17 / 255.0, alpha: 1.0)
-                : NSColor.white
-        })
-        leftEyeLayer.fillColor = eyeColor.cgColor
-        rightEyeLayer.fillColor = eyeColor.cgColor
-    }
-
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        updateEyeColors()
-    }
-
-    private var currentLookOffset: CGFloat = 0
-    private var lookIndex = 0
-    private var lookTimer: Timer?
-
-    private func updateLayout() {
-        scale = logoWidth / 32
-        let bodyRect = CGRect(x: scale, y: scale, width: 30 * scale, height: 20 * scale)
-
-        bodyLayer.path = NSBezierPath(
-            roundedRect: bodyRect,
-            xRadius: 6 * scale,
-            yRadius: 6 * scale
-        ).cgPath
-
-        let eyeWidth: CGFloat = 2.8 * scale
-        let eyeHeight: CGFloat = 8 * scale
-        let cornerRadius: CGFloat = 1.4 * scale
-        let eyeY: CGFloat = 11 * scale - eyeHeight / 2
-
-        let eyePath = NSBezierPath(
-            roundedRect: CGRect(origin: .zero, size: CGSize(width: eyeWidth, height: eyeHeight)),
-            xRadius: cornerRadius,
-            yRadius: cornerRadius
-        ).cgPath
-
-        leftEyeLayer.path = eyePath
-        rightEyeLayer.path = eyePath
-
-        leftEyeLayer.frame = CGRect(x: 11.8 * scale, y: eyeY, width: eyeWidth, height: eyeHeight)
-        rightEyeLayer.frame = CGRect(x: 17.4 * scale, y: eyeY, width: eyeWidth, height: eyeHeight)
-
-        addBlinkAnimation()
-        if !isPaused {
-            startRandomLooking()
-        }
-    }
-
-    private func addBlinkAnimation() {
-        leftEyeLayer.removeAnimation(forKey: "blink")
-        rightEyeLayer.removeAnimation(forKey: "blink")
-
-        // 眨眼：闭眼 0.08s、停留 0.04s、睁眼 0.08s，每 3 秒一次。
-        let close = CABasicAnimation(keyPath: "transform.scale.y")
-        close.fromValue = 1
-        close.toValue = 0.12
-        close.duration = 0.08
-        close.beginTime = 0
-
-        let hold = CABasicAnimation(keyPath: "transform.scale.y")
-        hold.fromValue = 0.12
-        hold.toValue = 0.12
-        hold.duration = 0.04
-        hold.beginTime = 0.08
-
-        let open = CABasicAnimation(keyPath: "transform.scale.y")
-        open.fromValue = 0.12
-        open.toValue = 1
-        open.duration = 0.08
-        open.beginTime = 0.12
-
-        let blink = CAAnimationGroup()
-        blink.animations = [close, hold, open]
-        blink.duration = 3.0
-        blink.repeatCount = .infinity
-        blink.isRemovedOnCompletion = false
-        blink.timeOffset = Double.random(in: 0..<3.0)
-
-        leftEyeLayer.add(blink, forKey: "blink")
-        rightEyeLayer.add(blink, forKey: "blink")
-    }
-
-    private func startRandomLooking() {
-        lookTimer?.invalidate()
-        leftEyeLayer.removeAnimation(forKey: "look")
-        rightEyeLayer.removeAnimation(forKey: "look")
-        currentLookOffset = 0
-        lookIndex = 0
-        scheduleNextLook(initial: true)
-    }
-
-    private func scheduleNextLook(initial: Bool = false) {
-        let pause = initial ? 0 : Double.random(in: 1.0...3.0)
-        lookTimer = Timer.scheduledTimer(withTimeInterval: pause, repeats: false) { [weak self] _ in
-            self?.performNextLook()
-        }
-    }
-
-    private func performNextLook() {
-        let amplitude = 5 * scale
-        let targets: [CGFloat] = [amplitude, 0, -amplitude, 0]
-        let nextTarget = targets[lookIndex % targets.count]
-        lookIndex += 1
-
-        let animation = CABasicAnimation(keyPath: "transform.translation.x")
-        animation.fromValue = currentLookOffset
-        animation.toValue = nextTarget
-        animation.duration = 0.3
-        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        animation.fillMode = .forwards
-        animation.isRemovedOnCompletion = false
-
-        CATransaction.begin()
-        CATransaction.setCompletionBlock { [weak self] in
-            self?.currentLookOffset = nextTarget
-            self?.scheduleNextLook()
-        }
-        leftEyeLayer.add(animation, forKey: "look")
-        rightEyeLayer.add(animation, forKey: "look")
-        CATransaction.commit()
-    }
-
-    func setAnimationsPaused(_ paused: Bool) {
-        guard paused != isPaused else { return }
-        isPaused = paused
-        if paused {
-            lookTimer?.invalidate()
-            lookTimer = nil
-            pauseLayerAnimations()
+extension View {
+    /// macOS 26 上应用 glassEffect，旧版系统回退到 regularMaterial 背景
+    @ViewBuilder
+    func glassEffectIfAvailable(in shape: some Shape, isHovered: Bool = false) -> some View {
+        if #available(macOS 26, *) {
+            self.glassEffect(in: shape)
         } else {
-            resumeLayerAnimations()
-            startRandomLooking()
+            self.background(
+                shape
+                    .fill(isHovered ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(Color.clear))
+            )
         }
-    }
-
-    private func pauseLayerAnimations() {
-        let pausedTime = leftEyeLayer.convertTime(CACurrentMediaTime(), from: nil)
-        leftEyeLayer.speed = 0
-        leftEyeLayer.timeOffset = pausedTime
-        rightEyeLayer.speed = 0
-        rightEyeLayer.timeOffset = pausedTime
-    }
-
-    private func resumeLayerAnimations() {
-        let pausedTime = leftEyeLayer.timeOffset
-        leftEyeLayer.speed = 1
-        leftEyeLayer.timeOffset = 0
-        leftEyeLayer.beginTime = 0
-        let timeSincePause = leftEyeLayer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
-        leftEyeLayer.beginTime = timeSincePause
-
-        rightEyeLayer.speed = 1
-        rightEyeLayer.timeOffset = 0
-        rightEyeLayer.beginTime = timeSincePause
     }
 }
 
@@ -4192,23 +4127,6 @@ struct ErrorMessageView: View {
                 .stroke(Color.orange.opacity(0.25), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 8))
-    }
-}
-
-// MARK: - macOS 26 Glass 效果适配
-
-extension View {
-    /// macOS 26 上应用 glassEffect，旧版系统回退到 regularMaterial 背景
-    @ViewBuilder
-    func glassEffectIfAvailable(in shape: some Shape, isHovered: Bool = false) -> some View {
-        if #available(macOS 26, *) {
-            self.glassEffect(in: shape)
-        } else {
-            self.background(
-                shape
-                    .fill(isHovered ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(Color.clear))
-            )
-        }
     }
 }
 
