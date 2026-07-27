@@ -717,6 +717,16 @@
       .hero-divider .sec-divider-glow {
         width: 200px;
       }
+      /* story hero 分割条——比首页更宽更亮，让"科幻光带"更有气势 */
+      .story-hero .hero-divider {
+        max-width: 880px;
+      }
+      .story-hero .hero-divider .sec-divider-glow {
+        width: 340px;
+        height: 3px;
+        filter: blur(5px);
+        opacity: 0.95;
+      }
       /* features 节专属：标题与分割条紧凑衔接，避免大留白赶走用户 */
       #features .sec-head {
         margin-bottom: 0;
@@ -2851,18 +2861,6 @@
         font-weight: 600;
       }
 
-      /* 光带分隔（复用官网科技风） */
-      .story-glow-divider {
-        width: 100%;
-        height: 1px;
-        margin: 0 auto 28px;
-        background: linear-gradient(90deg, transparent 0%, rgba(45, 117, 246, 0.08) 15%, rgba(45, 117, 246, 0.7) 50%, rgba(45, 117, 246, 0.08) 85%, transparent 100%);
-        box-shadow:
-          0 0 14px rgba(45, 117, 246, 0.55),
-          0 0 48px rgba(45, 117, 246, 0.28),
-          0 0 96px rgba(45, 117, 246, 0.14);
-      }
-
       /* Lucide 图标尺寸控制（替换 emoji 后） */
       .tl-node svg {
         width: 18px;
@@ -2883,10 +2881,6 @@
         stroke: var(--orange);
       }
       .chip svg {
-        width: 15px;
-        height: 15px;
-      }
-      .tech-badge svg {
         width: 15px;
         height: 15px;
       }
@@ -2956,6 +2950,30 @@
         height: 30px;
         stroke: var(--blue-2);
         flex-shrink: 0;
+        transition: filter 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      /* prose 章节 hover：标题下划线 + icon 光晕（仅限含 .sec-title-text 的章节） */
+      .sec-title-text {
+        position: relative;
+        display: inline-block;
+      }
+      .sec-title-text::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -4px;
+        height: 2px;
+        background: var(--blue-2);
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .story-section:hover .sec-title-text::after {
+        transform: scaleX(1);
+      }
+      .story-section:has(.sec-title-text):hover .sec-head h2 svg {
+        filter: drop-shadow(0 0 10px rgba(45, 117, 246, 0.6));
       }
       .story-section .sec-head p {
         margin-left: 0;
@@ -3044,30 +3062,6 @@
         transform: scaleX(1);
       }
 
-      /* 技术栈徽章 */
-      .tech-badges {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-      .tech-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        border-radius: 999px;
-        background: rgba(45, 117, 246, 0.08);
-        border: 1px solid rgba(45, 117, 246, 0.3);
-        font-size: 14px;
-        font-weight: 500;
-        color: #9dbcff;
-      }
-      .tech-badge.alt {
-        background: rgba(255, 255, 255, 0.04);
-        border-color: var(--border);
-        color: var(--text-2);
-      }
-
       /* 段落 + 清单 */
       .story-block {
         max-width: 880px;
@@ -3125,6 +3119,18 @@
         box-shadow:
           0 0 0 4px rgba(6, 9, 15, 0.9),
           0 0 18px rgba(45, 117, 246, 0.3);
+        transition:
+          border-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+          box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+          background 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      /* 关键过程条目 hover：标题下划线 + 左侧图标提亮 */
+      .tl-item:hover .tl-node {
+        border-color: var(--blue-2);
+        background: rgba(45, 117, 246, 0.12);
+        box-shadow:
+          0 0 0 4px rgba(6, 9, 15, 0.9),
+          0 0 26px rgba(45, 117, 246, 0.6);
       }
       .tl-head {
         display: flex;
@@ -3137,6 +3143,23 @@
         font-size: 19px;
         font-weight: 700;
         color: var(--text);
+        position: relative;
+        display: inline-block;
+      }
+      .tl-title::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -4px;
+        height: 1px;
+        background: var(--blue-2);
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .tl-item:hover .tl-title::after {
+        transform: scaleX(1);
       }
       .tl-tag {
         font-size: 12px;
@@ -3226,41 +3249,81 @@
         color: var(--text-2);
         line-height: 1.5;
       }
-
-      /* 洞见卡片（感受建议） */
-      .insight-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+      /* 最后一张「更多功能」——跨 2 列、横向布局、虚线边框，跟前面卡片视觉区分 */
+      .feature-mini--more {
+        grid-column: span 2;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
         gap: 16px;
+        border-style: dashed;
+        border-color: rgba(91, 147, 255, 0.35);
+        background: rgba(91, 147, 255, 0.04);
       }
-      .insight-card {
-        padding: 24px;
-        border-radius: var(--radius);
-        background: var(--card);
+      .feature-mini--more .more-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .feature-mini--more .more-icon svg {
+        width: 30px;
+        height: 30px;
+        stroke: var(--blue-2);
+      }
+      .feature-mini--more .more-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      .feature-mini--more .more-sub {
+        font-size: 13px;
+        color: var(--text-2);
+        line-height: 1.5;
+      }
+
+      /* 感受与建议——大数字锚点 + 分隔条目 */
+      .tip-list {
         border: 1px solid var(--border);
-        transition:
-          transform 0.25s,
-          border-color 0.25s;
+        border-radius: var(--radius);
+        overflow: hidden;
       }
-      .insight-card:hover {
-        transform: translateY(-3px);
-        border-color: rgba(245, 166, 35, 0.4);
+      .tip-item {
+        display: grid;
+        grid-template-columns: 72px 1fr;
+        gap: 24px;
+        padding: 22px 28px;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.3s cubic-bezier(0.22, 1, 0.36, 1);
       }
-      .insight-card .ico {
-        font-size: 24px;
-        margin-bottom: 12px;
-        display: block;
+      .tip-item:last-child {
+        border-bottom: none;
       }
-      .insight-card h4 {
+      .tip-item:hover {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .tip-num {
+        font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 26px;
+        font-weight: 600;
+        color: var(--text-2);
+        line-height: 1;
+        letter-spacing: 1px;
+        align-self: center;
+      }
+      .tip-title {
         font-size: 16px;
-        font-weight: 700;
-        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 6px;
       }
-      .insight-card p {
+      .tip-body {
         font-size: 14px;
         color: var(--text-2);
-        line-height: 1.65;
+        line-height: 1.7;
       }
+
       .insight-card.warn {
         border-color: rgba(245, 166, 35, 0.25);
         background: rgba(245, 166, 35, 0.04);
@@ -3295,9 +3358,6 @@
         }
         .feature-mini-grid {
           grid-template-columns: 1fr 1fr;
-        }
-        .insight-grid {
-          grid-template-columns: 1fr;
         }
         .nav-story-link span {
           display: none;
@@ -3877,18 +3937,21 @@
         <section class="story-hero reveal">
           <span class="sec-tag"><img src="assets/kimi-logo.png" alt="Kimi Code" class="sec-tag-logo" />实践分享</span>
           <h1 class="story-title">如何用 <span class="grad">Kimi Code</span> 打造一个好用的<br />Mac 菜单栏应用</h1>
-          <div class="story-glow-divider reveal"></div>
+          <div class="sec-divider hero-divider reveal" aria-hidden="true">
+            <span class="sec-divider-line"></span>
+            <span class="sec-divider-glow"></span>
+          </div>
           <p class="story-sub">全程用 Kimi Code，从选型到自动更新，完整构建一个 Mac 应用的过程。</p>
         </section>
 
         <!-- 1. 案例简要 -->
         <section class="story-section reveal">
           <div class="sec-head">
-            <h2><i data-lucide="file-text"></i>案例简要</h2>
+            <h2><i data-lucide="file-text"></i><span class="sec-title-text">案例简要</span></h2>
           </div>
           <div class="story-rows">
             <div class="story-row">
-              <span class="lbl"><i data-lucide="file-text"></i>简介</span><span class="val">常驻 macOS 菜单栏的轻量小工具，实时查看 Kimi Code 用量配额、加油包余额，扫描本地会话记录展示 Token 消耗与缓存命中率。官网与全部代码 100% 由 Kimi Code 编写。</span>
+              <span class="lbl"><i data-lucide="file-text"></i>简介</span><span class="val">常驻 macOS 菜单栏的轻量小工具，实时查看 Kimi Code 用量配额、加油包余额，扫描本地会话记录展示 Token 消耗与缓存命中率。</span>
             </div>
             <div class="story-row">
               <span class="lbl"><i data-lucide="package"></i>项目属性</span><span class="val">开源项目 / 独立产品</span>
@@ -3905,28 +3968,18 @@
         <!-- 2. 工具链与环境 -->
         <section class="story-section reveal">
           <div class="sec-head">
-            <h2><i data-lucide="wrench"></i>工具链与环境</h2>
+            <h2><i data-lucide="wrench"></i><span class="sec-title-text">工具链与环境</span></h2>
           </div>
           <div class="story-block">
-            <p>全程用 <b>Kimi Code</b>，自然语言提需求，它读写代码、跑命令、做构建，我只负责看效果、给反馈，循环迭代。</p>
-            <p>语言框架是 <b>Swift + SwiftUI</b>，做 macOS <code>MenuBarExtra</code> 菜单栏 App。CI/CD 走 GitHub Actions 单条流水线，配合 Sparkle 自动更新 + Apple 签名公证。</p>
-          </div>
-          <div class="tech-badges" style="margin-top: 20px">
-            <span class="tech-badge"><i data-lucide="zap"></i> Kimi Code</span>
-            <span class="tech-badge">🤖 kimi-code/k3</span>
-            <span class="tech-badge">🅢 Swift + SwiftUI</span>
-            <span class="tech-badge">🍎 macOS MenuBarExtra</span>
-            <span class="tech-badge alt">Sparkle 自动更新</span>
-            <span class="tech-badge alt">Developer ID 签名</span>
-            <span class="tech-badge alt">Notarization 公证</span>
-            <span class="tech-badge alt">GitHub Actions CI</span>
+            <p>全程用 <b>Kimi Code</b>（命令行版）做 AI 协作——自然语言提需求，它读写代码、跑命令、做构建；我用 <b>Xcode</b> 编译验证、看效果、给反馈，循环迭代。主力模型是 <code>kimi-code/k3</code>。</p>
+            <p>语言框架 <b>Swift + SwiftUI</b>，做 macOS 原生 <code>MenuBarExtra</code> 菜单栏 App。CI/CD 走 GitHub Actions 单条流水线，配合 Sparkle 自动更新 + Apple Developer ID 签名 + Notarization 公证。</p>
           </div>
         </section>
 
         <!-- 3. 背景与目标 -->
         <section class="story-section reveal">
           <div class="sec-head">
-            <h2><i data-lucide="target"></i>背景与目标</h2>
+            <h2><i data-lucide="target"></i><span class="sec-title-text">背景与目标</span></h2>
           </div>
           <div class="story-block">
             <p class="lead">用 Kimi Code 用得多了，最焦虑的就是不知道还剩多少额度。</p>
@@ -4052,41 +4105,43 @@
               <h4>完全只读</h4>
               <p>只读本地 Kimi Code 数据，不改任何官方配置、不上传任何信息</p>
             </div>
-            <div class="feature-mini">
-              <span class="ico"><i data-lucide="package-plus"></i></span>
-              <h4>持续更新</h4>
-              <p>持续跟随 Kimi Code 官方更新，第一时间支持新功能</p>
+            <div class="feature-mini feature-mini--more">
+              <div class="more-icon"><i data-lucide="package-plus"></i></div>
+              <div class="more-content">
+                <div class="more-title">持续跟随 Kimi Code 同步</div>
+                <div class="more-sub">更多新功能跟着 Kimi Code 一起更新，第一时间支持</div>
+              </div>
             </div>
           </div>
         </section>
 
-        <!-- 6. 感受、踩坑与建议 -->
+        <!-- 6. 感受与建议 -->
         <section class="story-section reveal">
           <div class="sec-head">
-            <h2><i data-lucide="message-circle"></i>感受、踩坑与建议</h2>
+            <h2><i data-lucide="message-circle"></i>感受与建议</h2>
           </div>
-          <div class="insight-grid">
-            <div class="insight-card">
-              <span class="ico"><i data-lucide="users"></i></span>
-              <h4>我只管验收</h4>
-              <p>跟 Kimi Code 搭档，我只负责验收——需求拆解、技术选型、代码实现、CI/CD、签名公证、官网构建、规范维护，全是它自己搞定。这种「什么都不用做，看它干活就很爽」的感觉，跟传统「AI 写几行代码 + 我 debug」的工具完全是两个物种。</p>
+          <div class="tip-list">
+            <div class="tip-item">
+              <div class="tip-num">01</div>
+              <div class="tip-content">
+                <div class="tip-title">让 AI 先查官方文档再动手</div>
+                <div class="tip-body">涉及框架 API、系统组件时，强制要求「看官方文档别自己创造」，写进 AGENTS.md 成强约束，避免 AI 凭记忆瞎写。</div>
+              </div>
             </div>
-            <div class="insight-card">
-              <span class="ico"><i data-lucide="lightbulb"></i></span>
-              <h4>Kimi Code 写代码很聪明</h4>
-              <p>每个环节的方案选择都透着工程直觉：选 macOS 原生 + HTTP 慢轮询，让 24 小时常驻只占 30MB 内存、CPU 占用基本为 0；想到用 <code>/login</code> 命令绕过自己逆向；扒开源仓库复刻授权/用量接口；扫本地 <code>wire.jsonl</code> 的 <code>usage.record</code> 事件做本机用量仪表盘；按 Swift 视图 HTML 1:1 复刻做官网——这些思路都是它自己想出来的。</p>
+            <div class="tip-item">
+              <div class="tip-num">02</div>
+              <div class="tip-content">
+                <div class="tip-title">把踩坑经验沉淀进 AGENTS.md</div>
+                <div class="tip-body">Kimi Code 每次新建对话自动读项目根目录的 AGENTS.md 当项目指令。写一次永久生效，比反复修 prompt 高效十倍。</div>
+              </div>
             </div>
-            <div class="insight-card">
-              <span class="ico"><i data-lucide="book-open"></i></span>
-              <h4>AGENTS.md 是给 AI 的项目说明书</h4>
-              <p>Kimi Code 每次新建对话会自动读项目根目录的 <b>AGENTS.md</b> 当作项目指令，把踩坑经验、协作规范、维护心得写进去，就是给以后所有对话装「长期记忆」，比反复修 prompt 高效十倍。</p>
+            <div class="tip-item">
+              <div class="tip-num">03</div>
+              <div class="tip-content">
+                <div class="tip-title">跑通 ≠ 正确——关键逻辑多反问 AI</div>
+                <div class="tip-body">哪怕代码能跑、结果看着对，也要追问「这里真的对吗？边界考虑全了吗？」让它再捋一遍。Kimi Code 经常会回「哦你说的对……」然后默默改掉一个你没注意到的隐患。</div>
+              </div>
             </div>
-          </div>
-          <h3 style="margin: 32px 0 16px; font-size: 18px">给其他用户的建议</h3>
-          <div class="story-block">
-            <p>① <b>让 AI 先查官方文档再动手。</b>涉及框架 API、系统组件时，明确要求「看官方文档别自己创造」，并写进 AGENTS.md 成强约束，避免 AI 凭记忆瞎写。</p>
-            <p>② <b>把踩坑经验沉淀进 AGENTS.md。</b>Kimi Code 每次新建对话会自动读项目根目录的 AGENTS.md 当作项目指令，写一次永久生效，比反复 prompt 调优高效十倍。</p>
-            <p>③ <b>关键数字跟 AI 双向对账。</b>写完数据处理逻辑，让 Kimi Code 用另一种方法独立算一遍，两边一致才放心（特别是聚合、百分比、扫描统计这类容易差一行的数字）。</p>
           </div>
         </section>
 
