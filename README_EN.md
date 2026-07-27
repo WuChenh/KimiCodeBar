@@ -2,11 +2,13 @@
   <img src="Assets/logo.gif" width="55" alt="KimiCodeBar Logo" align="absmiddle">&nbsp;&nbsp;KimiCodeBar
 </h1>
 <p align="left">
-  <a href="https://github.com/xifandev/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.1.1-333333" alt="Version"></a>
- <img src="https://img.shields.io/badge/macOS-333333?logo=apple&logoColor=white" alt="macOS">
+  <a href="https://github.com/xifandev/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.2.0-333333" alt="Version"></a>
+  <img src="https://img.shields.io/badge/macOS-333333?logo=apple&logoColor=white" alt="macOS">
   <img src="https://img.shields.io/badge/-KIMI%20Community%20Edition-orange" alt="Community Edition">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/xifandev/KimiCodeBar" alt="License"></a>
 </p>
+
+[中文](README.md) | English
 
 🌐 **Website:** [https://xifandev.github.io/KimiCodeBar/](https://xifandev.github.io/KimiCodeBar/)
 
@@ -20,38 +22,44 @@ A lightweight usage monitoring tool built for [Kimi Code](https://www.kimi.com/c
 
 #
 
-### 👇 Real-time menu bar monitoring
+### 👇 Real-time Menu Bar Monitoring
 
 <img src="Assets/menu-bar.png" width="400" alt="Menu bar usage overview">
 
-### ✨ Menu bar popup panel
+### ✨ Menu Bar Popup Panel
 
 <p align="left" style="display: flex; gap: 20px; ">
-  <img src="Assets/panel-01.png"   height="400" alt="Dark mode">
-  <img src="Assets/panel-02.png"  height="400" alt="Light mode">
+  <img src="Assets/panel-01.png" height="400" alt="Dark mode">
+  <img src="Assets/panel-02.png" height="400" alt="Light mode">
 </p>
 
-### ✨ Quick login with Kimi
+### ✨ Multi-Platform Support
 
-Using official Kimi Code APIs, supports one-click browser authorization login. The API Key login method is also kept available and can be switched freely in settings.
+Switch between Kimi Code and DeepSeek with a single click. View quota and balance for each platform at a glance.
 
-### ✨ Auto-detect KimiCode updates
+### ✨ Quick Login
 
-  <img src="Assets/newtip.png" width="400"  alt="Update notification">
- <img src="Assets/msg.png" width="400"  alt="Update notification">
+Using official Kimi Code APIs with one-click browser authorization. API Key login is also supported and can be switched freely in settings.
+
+### ✨ Local Token Tracking
+
+Automatically scans local Kimi Code session records to display total Token consumption with daily bar charts. Supports Cumulative / Today / 7-Day time ranges.
+
+### ✨ Native macOS Experience
+
+Adapts macOS Liquid Glass design language with system-level Material backgrounds and semantic colors. Automatically follows light/dark mode.
 
 #
 
 ### 🔒 Privacy & Security
 
-All data is stored locally. APIs only communicate with official Kimi servers. The full source code is open.
+All data is stored locally. APIs only communicate with official Kimi / DeepSeek servers. The full source code is open.
 
 #
 
-### 🛠 Platform Support
+### 🛠 System Requirements
 
-- macOS (Released)
-- Windows (Coming soon)
+- macOS 14.0 or later
 
 #
 

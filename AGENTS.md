@@ -10,7 +10,7 @@
 
 实现任何涉及系统组件、框架 API 或平台特定行为的功能前，先阅读对应系统的官方文档 / Human Interface Guidelines / API Reference，确认推荐用法。
 
-> 案例：主题切换不要对 `MenuBarExtra` 内容视图使用 `.preferredColorScheme()`，这会触发 SwiftUI 运行时警告 `Publishing changes from within view updates is not allowed`。应通过 `NSApplication.shared.appearance` 控制应用整体外观，让 `NSColor` 动态配色自动适配。
+> 案例：主题切换不要对 `MenuBarExtra` 内容视图使用 `.preferredColorScheme()`，这会触发 SwiftUI 运行时警告 `Publishing changes from within view updates is not allowed`。应通过 `NSApplication.shared.appearance` 控制应用整体外观，让系统语义色（`.primary` / `.secondary`）和 Material 背景自动适配。
 
 ## Kimi CLI 命令参考
 
@@ -70,14 +70,13 @@ App 支持应用内语言切换（跟随系统 / 中文 / English），机制见
 - 一句话一条，不写细节堆砌，不写「修复了若干 bug」这类空话。
 - **只写用户可见、可感知的更新点**：如功能新增、UI 交互优化、bug 修复。不写仓库内部维护项，如 CI 流程调整、文件命名规范、版本号管理方式等。
 
-### 示例（v1.1.1）
+### 示例（v1.2.0）
 
 ```markdown
-## v1.1.1 更新内容
+## v1.2.0 更新内容
 
-- 集成 Sparkle 自动更新框架（测试版），支持后台静默下载与 GitHub Releases 手动下载兜底。
-- 适配 Kimi Code 0.28，Kimi Web 状态检测改为本地端口探测，启停逻辑同步更新。
-- 优化底部版本卡片交互：悬停高亮、手型光标，点击直达 CLI 更新日志与 App Release。
-- 修复加油包未启用时余额误显示估算金额的问题。
-- 新增英文 README，官网支持中英文切换。
+- 新增「本机消耗量」卡片，支持累计 / 今日 / 7 天三种范围，首次加载骨架屏动效。
+- 新增 DeepSeek 平台支持，Kimi / DeepSeek 一键切换。
+- 色彩系统重构为纯 SwiftUI，系统语义色 + Material 背景自动适配浅色/深色模式。
+- 移除 Sparkle 自动更新框架，精简依赖。
 ```
