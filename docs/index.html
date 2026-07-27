@@ -3022,6 +3022,27 @@
       .story-row .val .muted {
         color: var(--text-2);
       }
+      .story-row .val a {
+        position: relative;
+        display: inline-block;
+        text-decoration: none;
+      }
+      .story-row .val a::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -3px;
+        height: 1px;
+        background: var(--blue-2);
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .story-row .val a:hover::after,
+      .story-row .val a:focus-visible::after {
+        transform: scaleX(1);
+      }
 
       /* 技术栈徽章 */
       .tech-badges {
@@ -3049,7 +3070,7 @@
 
       /* 段落 + 清单 */
       .story-block {
-        max-width: 760px;
+        max-width: 880px;
       }
       .story-block p {
         font-size: 16px;
@@ -3174,7 +3195,7 @@
       /* 成果功能网格 */
       .feature-mini-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 14px;
       }
       .feature-mini {
@@ -3209,7 +3230,7 @@
       /* 洞见卡片（感受建议） */
       .insight-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 16px;
       }
       .insight-card {
@@ -3246,30 +3267,6 @@
       }
       .insight-card.warn:hover {
         border-color: rgba(245, 166, 35, 0.5);
-      }
-
-      /* 套娃引用块 */
-      .story-quote {
-        max-width: 760px;
-        margin: 0;
-        padding: 28px 30px;
-        border-radius: var(--radius);
-        border: 1px solid rgba(45, 117, 246, 0.3);
-        background: linear-gradient(135deg, rgba(45, 117, 246, 0.08), rgba(91, 147, 255, 0.04));
-        font-size: 17px;
-        line-height: 1.8;
-        color: var(--text);
-        position: relative;
-      }
-      .story-quote::before {
-        content: '"';
-        position: absolute;
-        top: -6px;
-        left: 18px;
-        font-size: 64px;
-        font-family: Georgia, serif;
-        color: rgba(45, 117, 246, 0.3);
-        line-height: 1;
       }
 
       /* story 视图底部 CTA */
@@ -3932,9 +3929,9 @@
             <h2><i data-lucide="target"></i>背景与目标</h2>
           </div>
           <div class="story-block">
-            <p class="lead">使用 Kimi Code 过程，最焦虑的就是不知道还剩多少额度。</p>
-            <p>KimiCode没有明确的实时限额，要么去网页翻看、要么CLI敲命令，没法一眼看到。<br />尤其「5小时限额」经常沉浸开发时，突然就不能用了，没有任何预警，直接突然停止，整个开发心流全毁，非常难受！</p>
-            <p>所以目标很简单：开发一个菜单栏用量监控工具，轻量化运行，限额一目了然。同时做Apple公证、能自动更新，自己用也无偿开源给社区，让更多人受益。</p>
+            <p class="lead">用 Kimi Code 用得多了，最焦虑的就是不知道还剩多少额度。</p>
+            <p>官方没有一目了然的 Token 用量展示，要么去网页翻、要么敲命令查。尤其「5 小时滚动限额」这种窗口，沉浸开发时突然断流，没有任何预警——正在干活突然停摆，心流全毁，非常难受。</p>
+            <p>所以目标很简单：做一个专为 Kimi Code 打造的菜单栏用量监控工具，轻量常驻、限额一目了然。要签名公证过、能自动更新，自己用也开源给社区。</p>
           </div>
         </section>
 
@@ -3981,13 +3978,18 @@
               <div class="tl-body">Kimi Code 迭代很快，经常一天几个版本，不及时更新会错过新功能和修复。所以做了版本提醒：比对当前 CLI 版本和开源仓库的更新日志，有新版本就系统通知 + 面板气泡提醒。开发时注意到一点——不能频繁打扰，所以加了「稍后再说」让用户自己掌控节奏。</div>
             </div>
             <div class="tl-item">
+              <div class="tl-node"><i data-lucide="globe"></i></div>
+              <div class="tl-head"><span class="tl-title">构建产品官网</span></div>
+              <div class="tl-body">起初想做个产品单页优雅地展示这个工具，用截图、甚至录屏，效果都不理想——静态、没生气。后来灵机一动：让 Kimi Code 照着自己的 <b>Swift 代码</b>，用 <b>HTML 1:1 复刻</b>一份，再配上 <b>CSS 动画</b>。成品极其逼真，比截图有沉浸感得多。这套「用 HTML 复刻原生 UI」的思路非常推荐大家在实践中尝试。</div>
+            </div>
+            <div class="tl-item">
               <div class="tl-node"><i data-lucide="rocket"></i></div>
               <div class="tl-head"><span class="tl-title">自动构建发布</span></div>
               <div class="tl-body">
-                手动打包发布太繁琐，还容易出错。所以搭了全自动流水线：<b>Sparkle</b> 做自动更新（后台静默下载 + EdDSA 签名校验），<b>Apple Developer ID 签名 + Notarization 公证</b>（安装不弹「无法验证开发者」），CI 用 <b>GitHub Actions</b> 单条流水线 build → sign → notarize → package →
+                手动打包发布太繁琐，还容易出错。所以搭了全自动流水线：<b>Sparkle</b> 做自动更新（后台静默下载 + EdDSA 签名校验），<b>Apple Developer ID 签名 + Notarization 公证</b>，用 <b>GitHub Actions</b> 单条流水线 build → sign → notarize → package →
                 release。维护者只需打 tag，全自动出签名公证后的安装包。
                 <div class="tl-callout">
-                  <span><b>GitHub Actions 强烈推荐新手一定要尝试！</b>例如我现在要发布该新版本，只需要跟 KimiCode 说一句「帮我发行下一个版本」，它就会自动打包自动公证，连更新日志也会自动帮你写好——<b>你真的什么都不需要去做</b>。</span>
+                  <span><b>✨GitHub Actions 强烈推荐新手一定要尝试！</b></b>例如我现在要发布该新版本，只需要跟 KimiCode 说一句「帮我发行下一个版本」，它就会自动打包自动公证，连更新日志也会自动帮你写好——<b>你真的什么都不需要去做</b>。</span>
                 </div>
               </div>
             </div>
@@ -3995,9 +3997,8 @@
               <div class="tl-node"><i data-lucide="book-open"></i></div>
               <div class="tl-head"><span class="tl-title">AGENTS.md：把协作经验固化成规范</span></div>
               <div class="tl-body">
-                先说一个很多新手不知道的前提：Kimi Code 每次新建对话时，会默认读取当前项目根目录下的 <b>AGENTS.md</b> 文件，把它当作项目指令来遵守——相当于给 AI 的“项目说明书”。所以只要把经验写进去，之后每次开新对话，AI
-                都会自动读取并照做，不用每次重复交代。基于这个机制，我们把每次踩坑和协作经验固化进 AGENTS.md，涵盖提交规范、平台规范优先（先查官方文档再动手）、构建验证、可点击元素必须有反馈、本地化、版本号管理、Release Notes 规范。<b>AGENTS.md 越写越厚，它的犯错率就越来越低</b>，比反复改 prompt
-                高效十倍。<span class="highlight">这是整个项目最重要的一环</span>
+                <span class="highlight">这是整个项目最重要的一环</span>  先说一个很多新手不知道的前提：Kimi Code 每次新建对话时，会默认读取当前项目根目录下的 <b>AGENTS.md</b> 文件，把它当作项目指令来遵守——相当于给 AI 的“项目说明书”。<br> 所以只要把项目规范写进去，之后每次开新对话，AI
+                都会自动读取并照做，不用每次重复交代。基于这个机制，我们把每次踩坑和协作经验固化进 AGENTS.md，它的犯错率就越来越低。
               </div>
             </div>
           </div>
@@ -4010,36 +4011,36 @@
           </div>
           <div class="story-rows">
             <div class="story-row">
-              <span class="lbl"><i data-lucide="globe"></i>官网</span><span class="val"><a href="https://xifandev.github.io/KimiCodeBar/" target="_blank" rel="noopener" style="color: var(--blue-2)">xifandev.github.io/KimiCodeBar</a> <span class="muted">（推荐先看）</span></span>
+              <span class="lbl"><i data-lucide="globe"></i>官网</span><span class="val"><a href="https://xifandev.github.io/KimiCodeBar/" target="_blank" rel="noopener" style="color: var(--blue-2)">xifandev.github.io/KimiCodeBar</a> </span>
             </div>
             <div class="story-row">
               <span class="lbl"><i data-lucide="github"></i>开源仓库</span><span class="val"><a href="https://github.com/xifandev/KimiCodeBar" target="_blank" rel="noopener" style="color: var(--blue-2)">github.com/xifandev/KimiCodeBar</a></span>
             </div>
-            <div class="story-row">
+            <!-- <div class="story-row">
               <span class="lbl"><i data-lucide="download"></i>下载</span><span class="val">GitHub Releases <span class="muted">（已签名公证，安装不弹警告）</span></span>
-            </div>
+            </div> -->
           </div>
           <h3 style="margin: 28px 0 16px; font-size: 18px">核心功能</h3>
           <div class="feature-mini-grid">
             <div class="feature-mini">
               <span class="ico"><i data-lucide="bar-chart-3"></i></span>
-              <h4>用量配额</h4>
-              <p>菜单栏实时显示本周 / 5 小时滚动窗口用量</p>
+              <h4>菜单栏实时用量</h4>
+              <p>菜单栏直接显示本周用量 + 5 小时滚动用量，无需打开面板</p>
             </div>
             <div class="feature-mini">
               <span class="ico"><i data-lucide="wallet"></i></span>
               <h4>加油包余额</h4>
-              <p>实时同步余额与消费明细</p>
+              <p>实时同步加油包余额与消费明细</p>
             </div>
             <div class="feature-mini">
-              <span class="ico"><i data-lucide="trending-up"></i></span>
+              <span class="ico"><i data-lucide="database"></i></span>
               <h4>本机消耗量</h4>
-              <p>Token 总量、缓存命中率、按天柱状图</p>
+              <p>扫描本地会话记录，按天展示 Token 消耗与缓存命中率</p>
             </div>
             <div class="feature-mini">
               <span class="ico"><i data-lucide="bell-ring"></i></span>
-              <h4>更新检测</h4>
-              <p>Kimi Code CLI 新版本第一时间提醒</p>
+              <h4>CLI 版本更新</h4>
+              <p>Kimi Code CLI 新版本发布，第一时间系统通知 + 面板气泡</p>
             </div>
             <div class="feature-mini">
               <span class="ico"><i data-lucide="refresh-cw"></i></span>
@@ -4047,9 +4048,14 @@
               <p>Sparkle 后台静默下载 + EdDSA 签名校验</p>
             </div>
             <div class="feature-mini">
-              <span class="ico"><i data-lucide="languages"></i></span>
-              <h4>中英双语</h4>
-              <p>跟随系统或手动切换</p>
+              <span class="ico"><i data-lucide="shield-check"></i></span>
+              <h4>完全只读</h4>
+              <p>只读本地 Kimi Code 数据，不改任何官方配置、不上传任何信息</p>
+            </div>
+            <div class="feature-mini">
+              <span class="ico"><i data-lucide="package-plus"></i></span>
+              <h4>持续更新</h4>
+              <p>持续跟随 Kimi Code 官方更新，第一时间支持新功能</p>
             </div>
           </div>
         </section>
@@ -4062,41 +4068,28 @@
           <div class="insight-grid">
             <div class="insight-card">
               <span class="ico"><i data-lucide="users"></i></span>
-              <h4>全栈搭档，不是补全</h4>
-              <p>Kimi Code 做了需求拆解、数据源选型、SwiftUI 实现、CI 编写、签名公证、官方文档查阅、bug 排查、规范维护。我的角色更像产品经理加验收者。</p>
+              <h4>我只管验收</h4>
+              <p>跟 Kimi Code 搭档，我只负责验收——需求拆解、技术选型、代码实现、CI/CD、签名公证、官网构建、规范维护，全是它自己搞定。这种「什么都不用做，看它干活就很爽」的感觉，跟传统「AI 写几行代码 + 我 debug」的工具完全是两个物种。</p>
             </div>
             <div class="insight-card">
-              <span class="ico"><i data-lucide="brain"></i></span>
-              <h4>AGENTS.md 是长期记忆</h4>
-              <p>比 prompt 持久，比文档可执行，每条规范背后都是一个真实的坑。这是和 AI 协作最高效的调优手段。</p>
+              <span class="ico"><i data-lucide="lightbulb"></i></span>
+              <h4>Kimi Code 写代码很聪明</h4>
+              <p>每个环节的方案选择都透着工程直觉：选 macOS 原生 + HTTP 慢轮询，让 24 小时常驻只占 30MB 内存、CPU 占用基本为 0；想到用 <code>/login</code> 命令绕过自己逆向；扒开源仓库复刻授权/用量接口；扫本地 <code>wire.jsonl</code> 的 <code>usage.record</code> 事件做本机用量仪表盘；按 Swift 视图 HTML 1:1 复刻做官网——这些思路都是它自己想出来的。</p>
+            </div>
+            <div class="insight-card">
+              <span class="ico"><i data-lucide="book-open"></i></span>
+              <h4>AGENTS.md 是给 AI 的项目说明书</h4>
+              <p>Kimi Code 每次新建对话会自动读项目根目录的 <b>AGENTS.md</b> 当作项目指令，把踩坑经验、协作规范、维护心得写进去，就是给以后所有对话装「长期记忆」，比反复修 prompt 高效十倍。</p>
             </div>
           </div>
           <h3 style="margin: 32px 0 16px; font-size: 18px">给其他用户的建议</h3>
           <div class="story-block">
-            <p>① <b>让 AI 先查官方文档再动手。</b>涉及框架 API、系统组件，明确要求「看官方文档别自己创造」，这条写进 AGENTS.md 成强约束，避免 AI 凭记忆瞎写。</p>
-            <p>② <b>把踩过的坑写成 AGENTS.md。</b>这是和 AI 长期协作最高效的调优方式，每次踩坑立刻补一条，AI 下次自动避坑。</p>
-            <p>③ <b>关键数字让 AI 跟你对账。</b>写完数据处理逻辑，用另一种工具独立算一遍，两边一致才放心。</p>
-            <p>④ <b>不要让 AI 自动重启 GUI App。</b>编译验证跑 xcodebuild 就够，重启 App 交给自己用 Xcode。</p>
+            <p>① <b>让 AI 先查官方文档再动手。</b>涉及框架 API、系统组件时，明确要求「看官方文档别自己创造」，并写进 AGENTS.md 成强约束，避免 AI 凭记忆瞎写。</p>
+            <p>② <b>把踩坑经验沉淀进 AGENTS.md。</b>Kimi Code 每次新建对话会自动读项目根目录的 AGENTS.md 当作项目指令，写一次永久生效，比反复 prompt 调优高效十倍。</p>
+            <p>③ <b>关键数字跟 AI 双向对账。</b>写完数据处理逻辑，让 Kimi Code 用另一种方法独立算一遍，两边一致才放心（特别是聚合、百分比、扫描统计这类容易差一行的数字）。</p>
           </div>
         </section>
 
-        <!-- 7. 其他补充 -->
-        <section class="story-section reveal">
-          <div class="sec-head">
-            <h2><i data-lucide="quote"></i>其他补充</h2>
-          </div>
-          <div class="story-quote">这个项目本身就是「用 Kimi Code 监控 Kimi Code」的套娃——KimiCodeBar 扫描的本地会话记录，就是它自己工作时产生的。看着柱状图里今天又烧了多少 Token，有种工具观察工具的乐趣。</div>
-        </section>
-
-        <!-- 底部 CTA -->
-        <section class="story-cta reveal">
-          <h2>想试试这个工具？</h2>
-          <p>免费 · 开源 · 一分钟完成安装</p>
-          <div class="cta-row" style="justify-content: center">
-            <a class="btn btn-primary btn-lg" href="https://github.com/xifandev/KimiCodeBar/releases" target="_blank" rel="noopener">前往下载</a>
-            <button type="button" class="btn btn-ghost btn-lg" data-back-home>回到首页</button>
-          </div>
-        </section>
       </div>
     </main>
 
@@ -4114,7 +4107,7 @@
             <a href="https://github.com/xifandev/KimiCodeBar/issues" target="_blank" rel="noopener">Issues</a>
             <a href="https://www.kimi.com/code" target="_blank" rel="noopener">Kimi Code</a>
           </div>
-          <p class="foot-note" data-i18n="footerNote">KimiCodeBar 是由社区开发者维护的开源项目（Kimi 社区版），并非 Kimi 官方产品。 本项目通过 Kimi Code 官方公开接口获取用量数据，仅用于本地展示。</p>
+          <p class="foot-note" data-i18n="footerNote">KimiCodeBar 是由社区开发者维护的开源项目（Kimi 社区版），并非 Kimi 官方产品。</p>
         </div>
       </div>
     </footer>
@@ -4217,7 +4210,7 @@
             downloadDesc: '免费 · 开源 · 一分钟完成安装',
             downloadCtaPrimary: '前往 GitHub Releases 下载',
             downloadCtaSecondary: '反馈问题 / 建议',
-            footerNote: 'KimiCodeBar 是由社区开发者维护的开源项目（Kimi 社区版），并非 Kimi 官方产品。 本项目通过 Kimi Code 官方公开接口获取用量数据，仅用于本地展示。',
+            footerNote: 'KimiCodeBar 是由社区开发者维护的开源项目（Kimi 社区版），并非 Kimi 官方产品。',
             kpCommunity: '社区版',
             kpWeekly: '本周用量',
             kp5Hour: '5小时用量',
@@ -4333,7 +4326,7 @@
             downloadDesc: 'Free · Open Source · Install in one minute',
             downloadCtaPrimary: 'Download from GitHub Releases',
             downloadCtaSecondary: 'Feedback / Suggestions',
-            footerNote: "KimiCodeBar is an open-source project maintained by community developers (Kimi Community Edition), not an official Kimi product. It fetches usage data via Kimi Code's official public API for local display only.",
+            footerNote: "KimiCodeBar is an open-source project maintained by community developers (Kimi Community Edition), not an official Kimi product.",
             kpCommunity: 'Community',
             kpWeekly: 'Weekly',
             kp5Hour: '5-Hour',
