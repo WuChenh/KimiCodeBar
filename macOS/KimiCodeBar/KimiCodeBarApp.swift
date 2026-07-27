@@ -4525,7 +4525,29 @@ enum KimiServerOperation: Equatable {
 final class KimiCodeBarModel: ObservableObject {
   static let shared = KimiCodeBarModel()
 
-  @AppStorage("kimiApiKey") var key = ""
+  private let kcKimiKey = "kimiApiKey"
+  private let kcDeepseekKey = "deepseekApiKey"
+
+  var key: String {
+    get { KeychainHelper.read(key: kcKimiKey) ?? "" }
+    set {
+      if newValue.isEmpty {
+        KeychainHelper.delete(key: kcKimiKey)
+      } else {
+        KeychainHelper.save(key: kcKimiKey, value: newValue)
+      }
+    }
+  }
+  var deepseekKey: String {
+    get { KeychainHelper.read(key: kcDeepseekKey) ?? "" }
+    set {
+      if newValue.isEmpty {
+        KeychainHelper.delete(key: kcDeepseekKey)
+      } else {
+        KeychainHelper.save(key: kcDeepseekKey, value: newValue)
+      }
+    }
+  }
   @AppStorage("loginMethod") var loginMethod: LoginMethod = .oauth {
     didSet { refresh(showsLoading: false) }
   }
@@ -4538,7 +4560,6 @@ final class KimiCodeBarModel: ObservableObject {
 
   // MARK: - 多平台支持
   @AppStorage("selectedProvider") var selectedProviderRaw: String = ProviderType.kimi.rawValue
-  @AppStorage("deepseekApiKey") var deepseekKey = ""
 
   // MARK: - 面板自定义（用户控制各卡片是否显示）
   @AppStorage("showBoosterWalletCard") var showBoosterWalletCard: Bool = true
@@ -4636,6 +4657,7 @@ final class KimiCodeBarModel: ObservableObject {
   }
 
   init() {
+    migrateKeysToKeychain()
     selectedProvider = ProviderType(rawValue: selectedProviderRaw) ?? .kimi
     oauthToken = KimiOAuthService.loadStoredToken()
     refresh(showsLoading: false)
@@ -4643,6 +4665,21 @@ final class KimiCodeBarModel: ObservableObject {
     startQuotaTimer()
     startUpdateTimer()
     KimiArchiveManager.shared.restartTimer()
+  }
+
+  private func migrateKeysToKeychain() {
+    let migrated = UserDefaults.standard.bool(forKey: "apiKeysMigratedToKeychain")
+    guard !migrated else { return }
+
+    if let oldKimi = UserDefaults.standard.string(forKey: "kimiApiKey"), !oldKimi.isEmpty {
+      KeychainHelper.save(key: kcKimiKey, value: oldKimi)
+    }
+    if let oldDS = UserDefaults.standard.string(forKey: "deepseekApiKey"), !oldDS.isEmpty {
+      KeychainHelper.save(key: kcDeepseekKey, value: oldDS)
+    }
+    UserDefaults.standard.removeObject(forKey: "kimiApiKey")
+    UserDefaults.standard.removeObject(forKey: "deepseekApiKey")
+    UserDefaults.standard.set(true, forKey: "apiKeysMigratedToKeychain")
   }
 
   func startQuotaTimer() {

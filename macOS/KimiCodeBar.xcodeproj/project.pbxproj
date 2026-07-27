@@ -18,6 +18,7 @@
 		FFAC0CE5E70E4F17AAD3B902 /* KimiCodeBarQuotaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F47923DD8C405BB3237AE1 /* KimiCodeBarQuotaService.swift */; };
 		7B1CA15E00000000000000000000A1 /* KimiLocalUsage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1CA15E00000000000000000000A2 /* KimiLocalUsage.swift */; };
 		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D5 /* ProviderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */; };
+		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D7 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D8 /* KeychainHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,7 @@
 		c68dac1893a64de08b00b18830c9deba /* KimiWebLaunchAgentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiWebLaunchAgentManager.swift; sourceTree = "<group>"; };
 		7B1CA15E00000000000000000000A2 /* KimiLocalUsage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiLocalUsage.swift; sourceTree = "<group>"; };
 		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderService.swift; sourceTree = "<group>"; };
+		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D8 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +78,7 @@
 				D072D603E59C42A791F3136E0477FE56 /* ArchiveSettingsView.swift */,
 				7A11B22C33D44E55F660123B /* LanguageManager.swift */,
 				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */,
+				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D8 /* KeychainHelper.swift */,
 				510792D7AE86479585E4504C /* Assets.xcassets */,
 				7A11B22C33D44E55F660123D /* Localizable.xcstrings */,
 				7D9C37304A73482ABB4CDE4D /* KimiCodeBar.entitlements */,
@@ -166,6 +169,7 @@
 				C3C950D6204C47819C0011560E684C68 /* ArchiveSettingsView.swift in Sources */,
 				7A11B22C33D44E55F660123A /* LanguageManager.swift in Sources */,
 				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D5 /* ProviderService.swift in Sources */,
+				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D7 /* KeychainHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -194,7 +198,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kimicodebar.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -224,7 +228,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kimicodebar.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
