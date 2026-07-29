@@ -93,7 +93,6 @@ struct SettingsSidebarItem: View {
       Text(pane.title)
         .font(.system(size: 14, weight: isSelected ? .medium : .regular))
         .foregroundStyle(isSelected ? .white : .kimiTextPrimary)
-
       Spacer()
     }
     .padding(.horizontal, 12)
@@ -110,7 +109,7 @@ struct SettingsSidebarItem: View {
 
   private var backgroundColor: Color {
     if isSelected {
-      return .kimiBlue
+      return .accentColor
     } else if isHovered {
       return Color.kimiTextPrimary.opacity(0.08)
     } else {
@@ -1244,7 +1243,7 @@ struct SkillsSettingsView: View {
                 }
               }
             }
-            .background(.ultraThinMaterial)
+          .background(.ultraThinMaterial)
 
             Divider()
               .background(Color.kimiTextPrimary.opacity(0.08))

@@ -116,23 +116,6 @@ struct KimiCodeBarApp: App {
 
 // MARK: - 配色
 
-extension Color {
-  init(light: Color, dark: Color) {
-    #if os(macOS)
-      self.init(
-        nsColor: NSColor(name: nil) { appearance in
-          appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            ? NSColor(dark) : NSColor(light)
-        })
-    #else
-      self.init(
-        uiColor: UIColor { traits in
-          traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
-        })
-    #endif
-  }
-}
-
 extension ShapeStyle where Self == Color {
   /// Kimi 品牌蓝色
   static var kimiBlue: Color { Color(red: 0.23, green: 0.51, blue: 0.96) }
@@ -472,8 +455,11 @@ private struct KimiCodeEye: View {
 
   private var eyeColor: Color {
     Color(
-      light: .white,
-      dark: Color(red: 24 / 255, green: 24 / 255, blue: 23 / 255))
+      nsColor: NSColor(name: nil) { appearance in
+        appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+          ? NSColor(red: 24 / 255, green: 24 / 255, blue: 23 / 255, alpha: 1)
+          : NSColor.white
+      })
   }
 
   // MARK: - Blink
@@ -542,7 +528,20 @@ private struct KimiCodeEye: View {
   }
 }
 
-// MARK: - macOS 26 Glass 效果适配
+// MARK: - macOS 26 设计适配
+
+/// 是否开启了「减弱动态效果」
+let isReduceMotionEnabled: Bool = {
+  NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+}()
+
+/// 统一圆角常量，随系统版本收敛
+enum DesignConstants {
+  static let cornerRadiusSmall: CGFloat = 6
+  static let cornerRadiusMedium: CGFloat = 10
+  static let cornerRadiusLarge: CGFloat = 12
+  static let cornerRadiusXLarge: CGFloat = 14
+}
 
 extension View {
   /// macOS 26 上应用 glassEffect，旧版系统回退到 regularMaterial 背景
@@ -555,6 +554,16 @@ extension View {
         shape
           .fill(isHovered ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(Color.clear))
       )
+    }
+  }
+
+  /// MenuBarExtra 面板背景：macOS 26 交给系统 Liquid Glass，旧版使用 ultraThinMaterial
+  @ViewBuilder
+  func menuBarPanelBackground() -> some View {
+    if #available(macOS 26, *) {
+      self
+    } else {
+      self.background(.ultraThinMaterial)
     }
   }
 }
@@ -750,7 +759,7 @@ struct KimiMenu: View {
     VStack(spacing: 14) {
       // Header
       HStack(spacing: 12) {
-        AnimatedKimiCodeLogo(width: 44, isAnimating: isMenuVisible)
+        AnimatedKimiCodeLogo(width: 44, isAnimating: isMenuVisible && !isReduceMotionEnabled)
 
         Text("KimiCodeBar")
           .font(.system(size: 18, weight: .bold))
@@ -867,7 +876,7 @@ struct KimiMenu: View {
     }
     .padding(16)
     .frame(width: 340)
-    .background(.ultraThinMaterial)
+    .menuBarPanelBackground()
     .overlay {
       if model.showKimiProvider && !model.hasKimiCredential {
         LoginOverlayView(isMenuVisible: isMenuVisible)
@@ -1576,12 +1585,8 @@ struct ActionButton: View {
       .foregroundStyle(
         disabled ? .kimiTextTertiary : (isHovered ? .kimiTextPrimary : .kimiTextSecondary)
       )
-      .background(
-        RoundedRectangle(cornerRadius: 10)
-          .fill(
-            isHovered && !disabled ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(Color.clear))
-      )
-      .clipShape(RoundedRectangle(cornerRadius: 10))
+      .glassEffectIfAvailable(in: RoundedRectangle(cornerRadius: DesignConstants.cornerRadiusMedium), isHovered: isHovered && !disabled)
+      .clipShape(RoundedRectangle(cornerRadius: DesignConstants.cornerRadiusMedium))
     }
     .buttonStyle(.plain)
     .disabled(disabled)
