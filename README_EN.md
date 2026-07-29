@@ -15,7 +15,7 @@ A lightweight usage monitoring tool built for [Kimi Code](https://www.kimi.com/c
 #
 
 #### Download (macOS): <a href="https://github.com/xifandev/KimiCodeBar/releases">GitHub Releases</a>
-#### Download (Windows): <a href="https://github.com/JYH1878/KimiCodeBar-Windows/releases">GitHub Releases</a> (Community-maintained)
+#### Download (Windows): <a href="https://github.com/JYH1878/KimiCodeBar-Windows/releases">GitHub Releases</a> (Maintained by @JYH1878)
 
 #### Feedback: <a href="https://github.com/xifandev/KimiCodeBar/issues">Issues</a>
 
@@ -52,7 +52,7 @@ All data is stored locally. APIs only communicate with official Kimi servers. Th
 ### 🛠 Platform Support
 
 - macOS (Released)
-- Windows (Released, Community-maintained)
+- Windows (Released, maintained by @JYH1878)
 
 #
 

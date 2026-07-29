@@ -17,7 +17,7 @@
 #
 
 #### macOS 版下载：<a href="https://github.com/xifandev/KimiCodeBar/releases">GitHub Releases</a>
-#### Windows 版下载：<a href="https://github.com/JYH1878/KimiCodeBar-Windows/releases">GitHub Releases</a>（社区维护）
+#### Windows 版下载：<a href="https://github.com/JYH1878/KimiCodeBar-Windows/releases">GitHub Releases</a>（由 @JYH1878 维护）
 
 #### 欢迎提交：<a href="https://github.com/xifandev/KimiCodeBar/issues">Issues</a> 反馈问题或建议
 
@@ -54,7 +54,7 @@
 ### 🛠 系统适配
 
 - MacOS（已发布）
-- Windows（已发布，社区维护）
+- Windows（已发布，由 @JYH1878 维护）
 
 #
 
