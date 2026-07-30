@@ -9,7 +9,7 @@
             <sparkle:shortVersionString>1.3.5</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <enclosure url="https://github.com/xifandev/KimiCodeBar/releases/download/v1.3.5/KimiCodeBar-1.3.5-sparkle-update.zip" length="3288106" type="application/octet-stream" sparkle:edSignature="2BpE5cLOOekOnOw9cO/kgYgq3IIVMZYHnnmQwAh6CWgVETm508h4CIcu/a8vO9bKBAJEK9exp8zrFGeOeyAVAg=="/>
-        <sparkle:releaseNotesLink>https://github.com/xifandev/KimiCodeBar/releases/tag/v1.3.5</sparkle:releaseNotesLink>
+        <sparkle:releaseNotesLink>https://xifandev.github.io/KimiCodeBar/release-notes.html</sparkle:releaseNotesLink>
         </item>
     </channel>
 </rss>

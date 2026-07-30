@@ -244,16 +244,116 @@ jobs:
             -o appcast.xml \
             updates/
 
-          # 注入 release notes 链接，让 Sparkle 更新弹窗显示 GitHub Release 更新日志
-          RELEASE_NOTES_URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/${GITHUB_REF_NAME}"
+          # 从 CHANGELOG.md 生成干净的 release notes HTML 页面
+          VERSION="${GITHUB_REF_NAME#v}"
+          RELEASE_DATE=$(date -u +"%Y 年 %m 月 %d 日")
+          NOTES_HTML=$(sed -n "/^## v${VERSION} 更新内容/,/^## v/p" CHANGELOG.md | \
+            grep -E "^- |^感谢" | \
+            sed 's/^- /<li>/; s/$/<\/li>/; s/^感谢 \(.*\)/<div class="thanks">\1<\/div>/' | \
+            tr '\n' ' ')
+
+          cat > docs/release-notes.html << 'EOF'
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KimiCodeBar 更新日志</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      line-height: 1.6;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .header {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #30363d;
+    }
+    .version {
+      font-size: 24px;
+      font-weight: 700;
+      color: #58a6ff;
+    }
+    .date {
+      font-size: 13px;
+      color: #8b949e;
+      margin-top: 4px;
+    }
+    .thanks {
+      font-size: 14px;
+      color: #8b949e;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      background: rgba(88, 166, 255, 0.08);
+      border-radius: 8px;
+      border: 1px solid rgba(88, 166, 255, 0.2);
+    }
+    .thanks a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      position: relative;
+      padding-left: 18px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #c9d1d9;
+    }
+    li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #58a6ff;
+      font-weight: bold;
+    }
+    .footer {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #30363d;
+      font-size: 12px;
+      color: #6e7681;
+    }
+    .footer a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="version">KimiCodeBar v${VERSION}</div>
+    <div class="date">${RELEASE_DATE}</div>
+  </div>
+
+  ${NOTES_HTML}
+
+  <div class="footer">
+    <a href="https://github.com/${GITHUB_REPOSITORY}/releases/tag/${GITHUB_REF_NAME}" target="_blank">在 GitHub 查看完整 Release →</a>
+  </div>
+</body>
+</html>
+EOF
+
+          # 注入 release notes 链接，让 Sparkle 更新弹窗显示干净的独立页面
+          RELEASE_NOTES_URL="https://xifandev.github.io/KimiCodeBar/release-notes.html"
           sed -i.bak "s|</item>|<sparkle:releaseNotesLink>${RELEASE_NOTES_URL}</sparkle:releaseNotesLink>\\n        </item>|" appcast.xml
           rm -f appcast.xml.bak
 
           mkdir -p docs
           cp appcast.xml docs/appcast.xml
 
-      # 将生成好的 appcast.xml 提交回仓库，确保 Pages 工作流和仓库文件始终保持最新
-      - name: Commit appcast.xml
+      # 将生成好的 appcast.xml 与 release-notes.html 提交回仓库，确保 Pages 工作流和仓库文件始终保持最新
+      - name: Commit appcast.xml and release-notes.html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -262,9 +362,10 @@ jobs:
           # 在独立目录中 checkout main，避免污染当前构建环境
           git clone --depth 1 --branch main "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/appcast-repo
           cp appcast.xml /tmp/appcast-repo/docs/appcast.xml
+          cp docs/release-notes.html /tmp/appcast-repo/docs/release-notes.html
           cd /tmp/appcast-repo
-          git add docs/appcast.xml
-          git diff --cached --quiet || git commit -m "chore: update appcast.xml for ${GITHUB_REF_NAME}"
+          git add docs/appcast.xml docs/release-notes.html
+          git diff --cached --quiet || git commit -m "chore: update appcast.xml and release notes for ${GITHUB_REF_NAME}"
           git push origin main
 
       # ============ 发布阶段 ============
