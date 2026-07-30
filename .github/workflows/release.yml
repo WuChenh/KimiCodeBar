@@ -196,6 +196,8 @@ jobs:
           hdiutil attach "$DMG_PATH" -mountpoint "$MOUNT_POINT" -nobrowse -quiet
 
           # 把 App 复制出来，staple 票据到 App bundle
+          # 注意：dist/KimiCodeBar.app 在 Package 阶段已存在，cp -R 会把它嵌套进去，必须先删除
+          rm -rf dist/KimiCodeBar.app
           cp -R "$MOUNT_POINT/KimiCodeBar.app" dist/KimiCodeBar.app
           xcrun stapler staple "dist/KimiCodeBar.app"
           xcrun stapler validate "dist/KimiCodeBar.app"
