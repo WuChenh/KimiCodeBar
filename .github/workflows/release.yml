@@ -183,29 +183,46 @@ jobs:
           xcrun stapler staple "$DMG_PATH"
           xcrun stapler validate "$DMG_PATH"
 
-      # 把公证票据也 staple 到 DMG 内的 App bundle 上，
+      # 把公证票据也 staple 到 App bundle 上，并重新打包 DMG 与 Sparkle zip，
       # 避免用户把 App 拖到 Applications 后因无法联网验证而报"已损坏"。
-      - name: Staple app inside DMG and build Sparkle update zip
+      - name: Staple app and rebuild DMG + Sparkle zip
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          DMG_PATH=$(ls dist/KimiCodeBar-*-macOS.dmg | head -1)
+          DMG_NAME="KimiCodeBar-${VERSION}-macOS.dmg"
+          DMG_PATH="dist/${DMG_NAME}"
           MOUNT_POINT=$(mktemp -d)
 
-          # 挂载 DMG
+          # 挂载已公证的旧 DMG
           hdiutil attach "$DMG_PATH" -mountpoint "$MOUNT_POINT" -nobrowse -quiet
 
-          # 把已公证的 App 复制出来，staple 票据到 App bundle
+          # 把 App 复制出来，staple 票据到 App bundle
           cp -R "$MOUNT_POINT/KimiCodeBar.app" dist/KimiCodeBar.app
           xcrun stapler staple "dist/KimiCodeBar.app"
           xcrun stapler validate "dist/KimiCodeBar.app"
 
-          # 用已 staple 的 App 生成 Sparkle 自动更新用 zip
-          cd dist
-          zip -r "KimiCodeBar-${VERSION}-sparkle-update.zip" KimiCodeBar.app
-
-          # 卸载 DMG
+          # 卸载旧 DMG
           hdiutil detach "$MOUNT_POINT" -quiet
           rmdir "$MOUNT_POINT"
+
+          # 用已 staple 的 App 生成 Sparkle 自动更新用 zip
+          (cd dist && zip -r "KimiCodeBar-${VERSION}-sparkle-update.zip" KimiCodeBar.app)
+
+          # 用已 staple 的 App 重新打包 DMG，确保 DMG 内的 App 也携带票据
+          rm -f "$DMG_PATH"
+          create-dmg \
+            --volname "KimiCodeBar" \
+            --background "macOS/Resources/dmg-background.png" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 450 210 \
+            --icon "KimiCodeBar.app" 150 210 \
+            --no-internet-enable \
+            "$DMG_PATH" \
+            "dist/KimiCodeBar.app"
+
+          # 重新签名新 DMG
+          codesign --force --timestamp --options runtime --sign "$SIGN_ID" "$DMG_PATH"
 
       # ============ 生成 Sparkle 更新清单 ============
       # appcast.xml 是 Sparkle 客户端检查更新的清单文件
