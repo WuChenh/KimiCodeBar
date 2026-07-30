@@ -252,62 +252,62 @@ jobs:
             sed 's/^- /<li>/; s/$/<\/li>/; s/^感谢 \(.*\)/<div class="thanks">\1<\/div>/' | \
             tr '\n' ' ')
 
-          cat > docs/release-notes.html << 'EOF'
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KimiCodeBar 更新日志</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: #0d1117;
-      color: #e6edf3;
-      line-height: 1.6;
-      padding: 20px;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .thanks {
-      font-size: 14px;
-      color: #8b949e;
-      margin-bottom: 16px;
-      padding: 10px 14px;
-      background: rgba(88, 166, 255, 0.08);
-      border-radius: 8px;
-      border: 1px solid rgba(88, 166, 255, 0.2);
-    }
-    .thanks a {
-      color: #58a6ff;
-      text-decoration: none;
-    }
-    ul {
-      list-style: none;
-      padding-left: 0;
-    }
-    li {
-      position: relative;
-      padding-left: 18px;
-      margin-bottom: 12px;
-      font-size: 14px;
-      color: #c9d1d9;
-    }
-    li::before {
-      content: "•";
-      position: absolute;
-      left: 0;
-      color: #58a6ff;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  ${NOTES_HTML}
-</body>
-</html>
-EOF
+          cat > docs/release-notes.html << EOF
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>KimiCodeBar 更新日志</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+                background: #0d1117;
+                color: #e6edf3;
+                line-height: 1.6;
+                padding: 20px;
+                max-width: 600px;
+                margin: 0 auto;
+              }
+              .thanks {
+                font-size: 14px;
+                color: #8b949e;
+                margin-bottom: 16px;
+                padding: 10px 14px;
+                background: rgba(88, 166, 255, 0.08);
+                border-radius: 8px;
+                border: 1px solid rgba(88, 166, 255, 0.2);
+              }
+              .thanks a {
+                color: #58a6ff;
+                text-decoration: none;
+              }
+              ul {
+                list-style: none;
+                padding-left: 0;
+              }
+              li {
+                position: relative;
+                padding-left: 18px;
+                margin-bottom: 12px;
+                font-size: 14px;
+                color: #c9d1d9;
+              }
+              li::before {
+                content: "•";
+                position: absolute;
+                left: 0;
+                color: #58a6ff;
+                font-weight: bold;
+              }
+            </style>
+          </head>
+          <body>
+            ${NOTES_HTML}
+          </body>
+          </html>
+          EOF
 
           # 注入 release notes 链接，让 Sparkle 更新弹窗显示干净的独立页面
           RELEASE_NOTES_URL="https://xifandev.github.io/KimiCodeBar/release-notes.html"
