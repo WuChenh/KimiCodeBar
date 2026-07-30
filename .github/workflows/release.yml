@@ -223,6 +223,12 @@ jobs:
             --download-url-prefix "https://github.com/xifandev/KimiCodeBar/releases/download/${GITHUB_REF_NAME}/" \
             -o appcast.xml \
             updates/
+
+          # 注入 release notes 链接，让 Sparkle 更新弹窗显示 GitHub Release 更新日志
+          RELEASE_NOTES_URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/${GITHUB_REF_NAME}"
+          sed -i.bak "s|</item>|<sparkle:releaseNotesLink>${RELEASE_NOTES_URL}</sparkle:releaseNotesLink>\\n        </item>|" appcast.xml
+          rm -f appcast.xml.bak
+
           mkdir -p docs
           cp appcast.xml docs/appcast.xml
 
