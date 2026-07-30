@@ -117,8 +117,6 @@ jobs:
         run: |
           cd dist
           VERSION="${GITHUB_REF_NAME#v}"
-          # Sparkle 自动更新用 zip（必须在 app 签名完成后打包）
-          zip -r "KimiCodeBar-${VERSION}-sparkle-update.zip" KimiCodeBar.app
           # 用户首次安装用 dmg（明确标注 macOS，避免与后续 Windows 版混淆）
           DMG_NAME="KimiCodeBar-${VERSION}-macOS.dmg"
           create-dmg \
@@ -184,6 +182,30 @@ jobs:
           # 公证成功：staple 票据到 DMG
           xcrun stapler staple "$DMG_PATH"
           xcrun stapler validate "$DMG_PATH"
+
+      # 把公证票据也 staple 到 DMG 内的 App bundle 上，
+      # 避免用户把 App 拖到 Applications 后因无法联网验证而报"已损坏"。
+      - name: Staple app inside DMG and build Sparkle update zip
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          DMG_PATH=$(ls dist/KimiCodeBar-*-macOS.dmg | head -1)
+          MOUNT_POINT=$(mktemp -d)
+
+          # 挂载 DMG
+          hdiutil attach "$DMG_PATH" -mountpoint "$MOUNT_POINT" -nobrowse -quiet
+
+          # 把已公证的 App 复制出来，staple 票据到 App bundle
+          cp -R "$MOUNT_POINT/KimiCodeBar.app" dist/KimiCodeBar.app
+          xcrun stapler staple "dist/KimiCodeBar.app"
+          xcrun stapler validate "dist/KimiCodeBar.app"
+
+          # 用已 staple 的 App 生成 Sparkle 自动更新用 zip
+          cd dist
+          zip -r "KimiCodeBar-${VERSION}-sparkle-update.zip" KimiCodeBar.app
+
+          # 卸载 DMG
+          hdiutil detach "$MOUNT_POINT" -quiet
+          rmdir "$MOUNT_POINT"
 
       # ============ 生成 Sparkle 更新清单 ============
       # appcast.xml 是 Sparkle 客户端检查更新的清单文件
