@@ -3,13 +3,13 @@
     <channel>
         <title>KimiCodeBar</title>
         <item>
-            <title>1.3.3</title>
-            <pubDate>Thu, 30 Jul 2026 17:52:21 +0000</pubDate>
-            <sparkle:version>1.3.3</sparkle:version>
-            <sparkle:shortVersionString>1.3.3</sparkle:shortVersionString>
+            <title>1.3.4</title>
+            <pubDate>Thu, 30 Jul 2026 17:58:03 +0000</pubDate>
+            <sparkle:version>1.3.4</sparkle:version>
+            <sparkle:shortVersionString>1.3.4</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/xifandev/KimiCodeBar/releases/download/v1.3.3/KimiCodeBar-1.3.3-sparkle-update.zip" length="10583418" type="application/octet-stream" sparkle:edSignature="5xUhMYFYgW1XckEwHPBW/BeF6xXkcfWtDKhVGIQBf075v7B0U9ui/6rQYGBHA8XzOqVxGwt067nkEWMRBTTlAg=="/>
-        <sparkle:releaseNotesLink>https://github.com/xifandev/KimiCodeBar/releases/tag/v1.3.3</sparkle:releaseNotesLink>
+            <enclosure url="https://github.com/xifandev/KimiCodeBar/releases/download/v1.3.4/KimiCodeBar-1.3.4-sparkle-update.zip" length="5286976" type="application/octet-stream" sparkle:edSignature="oeMTEXgW0Kvx89D3c6vSK3MITKjhCuThQRUwREBO4CgJda1vGBpTOVFt1LqH5Y8DS0g4GhkWp1dy8T8W0LG8Cw=="/>
+        <sparkle:releaseNotesLink>https://github.com/xifandev/KimiCodeBar/releases/tag/v1.3.4</sparkle:releaseNotesLink>
         </item>
     </channel>
 </rss>
