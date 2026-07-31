@@ -259,7 +259,7 @@ enum MenuBarTextRenderer {
   ) -> NSImage {
     let kimiImage = image(scheme: scheme, weekly: weekly, fiveHour: fiveHour)
 
-    let content = HStack(spacing: 8) {
+    let content = HStack(spacing: 5) {
       Image(nsImage: kimiImage)
       Text(deepseekText)
         .font(.system(size: 11, weight: .medium, design: .rounded))
