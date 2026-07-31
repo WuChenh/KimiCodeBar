@@ -2849,6 +2849,50 @@
           }
         }
       }
+    },
+    "KimiCode CLI 检查更新" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KimiCode CLI Update Check"
+          }
+        }
+      }
+    },
+    "启用检查更新" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable Update Check"
+          }
+        }
+      }
+    },
+    "关闭后打开面板和后台都不再检查新版本" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When disabled, no update checks on panel open or in background"
+          }
+        }
+      }
+    },
+    "KimiCodeBar 版本号" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KimiCodeBar Version"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -767,9 +767,11 @@ struct KimiMenu: View {
     private let consoleURL = URL(string: "https://www.kimi.com/code/console")!
     private let githubURL = URL(string: "https://github.com/xifandev/KimiCodeBar")!
 
-    /// CLI 版本行显示条件：用户开启，或检测到 CLI 新版本时强制显示（无视隐藏设置）
+    /// CLI 版本行显示条件：用户开启，或（启用检查更新且）检测到 CLI 新版本时强制显示（无视隐藏设置）。
+    /// 加 enableKimiCLIUpdateCheck 守卫：关闭检查更新后，即便磁盘缓存里有新版本号，也不强制冒出版本行。
     private var shouldShowKimiVersionRow: Bool {
-        model.showKimiVersionRow || model.pendingUpdateVersion != nil || model.hasCachedKimiUpdate
+        model.showKimiVersionRow
+        || (model.enableKimiCLIUpdateCheck && (model.pendingUpdateVersion != nil || model.hasCachedKimiUpdate))
     }
 
     /// App 版本行显示条件：用户开启，或检测到 App 新版本（含下载失败、待重启）时强制显示（无视隐藏设置）
@@ -3318,34 +3320,59 @@ struct BasicSettingsView: View {
                     }
                 }
 
+                // 额度刷新
                 SettingsCard {
-                    VStack(alignment: .leading, spacing: 0) {
-                        SettingsCardRow(title: languageManager.tr("额度刷新间隔")) {
-                            HStack(spacing: 6) {
-                                TextField("", text: $quotaIntervalText)
-                                    .textFieldStyle(.roundedBorder)
-                                    .frame(width: 60)
-                                    .focused($focusedField, equals: .quotaInterval)
-                                    .onChange(of: quotaIntervalText) { _, newValue in
-                                        let filtered = newValue.filter { $0.isNumber }
-                                        if filtered != newValue {
-                                            quotaIntervalText = filtered
-                                        }
+                    SettingsCardRow(title: languageManager.tr("额度刷新间隔")) {
+                        HStack(spacing: 6) {
+                            TextField("", text: $quotaIntervalText)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 60)
+                                .focused($focusedField, equals: .quotaInterval)
+                                .onChange(of: quotaIntervalText) { _, newValue in
+                                    let filtered = newValue.filter { $0.isNumber }
+                                    if filtered != newValue {
+                                        quotaIntervalText = filtered
                                     }
+                                }
 
-                                LText("分钟")
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(.kimiTextSecondary)
-                            }
+                            LText("分钟")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.kimiTextSecondary)
+                        }
+                    }
+                }
+
+                // KimiCode CLI 检查更新
+                SettingsCard(title: languageManager.tr("KimiCode CLI 检查更新")) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        SettingsCardRow(
+                            title: languageManager.tr("启用检查更新"),
+                            subtitle: languageManager.tr("关闭后打开面板和后台都不再检查新版本")
+                        ) {
+                            Toggle("", isOn: $model.enableKimiCLIUpdateCheck)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                                .cursor(.pointingHand)
+                                .onChange(of: model.enableKimiCLIUpdateCheck) { _, isEnabled in
+                                    if !isEnabled {
+                                        // 关闭时清掉待更新状态，避免残留弹窗/通知
+                                        model.pendingUpdateVersion = nil
+                                        model.snoozedKimiUpdateUntil = 0
+                                    }
+                                    // 重启 Timer：开启时按间隔起 Timer，关闭时 invalidate
+                                    model.restartTimers()
+                                }
                         }
 
                         SettingsCardDivider()
+
                         SettingsCardRow(title: languageManager.tr("检查更新间隔")) {
                             HStack(spacing: 6) {
                                 TextField("", text: $updateIntervalText)
                                     .textFieldStyle(.roundedBorder)
                                     .frame(width: 60)
                                     .focused($focusedField, equals: .updateInterval)
+                                    .disabled(!model.enableKimiCLIUpdateCheck)
                                     .onChange(of: updateIntervalText) { _, newValue in
                                         let filtered = newValue.filter { $0.isNumber }
                                         if filtered != newValue {
@@ -3358,6 +3385,7 @@ struct BasicSettingsView: View {
                                     .foregroundStyle(.kimiTextSecondary)
                             }
                         }
+                        .opacity(model.enableKimiCLIUpdateCheck ? 1.0 : 0.5)
                     }
                 }
 
@@ -3473,7 +3501,7 @@ struct PanelCustomSettingsView: View {
                         SettingsCardDivider()
 
                         SettingsCardRow(
-                            title: languageManager.tr("KimiCodeBar 版本行"),
+                            title: languageManager.tr("KimiCodeBar 版本号"),
                             subtitle: languageManager.tr("发现新版本时会强制显示")
                         ) {
                             Toggle("", isOn: $model.showAppUpdateRow)
@@ -4377,6 +4405,10 @@ final class KimiCodeBarModel: ObservableObject {
 
     @AppStorage("quotaRefreshInterval") var quotaRefreshInterval: Double = 3
     @AppStorage("updateCheckInterval") var updateCheckInterval: Double = 10
+    /// 是否启用 KimiCode CLI 更新检查。关闭后：后台 Timer 不启动、面板打开不联网检查、
+    /// 不基于缓存弹窗、不发系统通知；本地版本号读取（loadKimiVersion）不受影响，
+    /// 版本行仍可正常显示当前 CLI 版本号（供用户排查/反馈 issue 时查看）。
+    @AppStorage("enableKimiCLIUpdateCheck") var enableKimiCLIUpdateCheck: Bool = true
     @AppStorage("menuBarDisplayScheme") var menuBarDisplayScheme: MenuBarDisplayScheme = .compact
     @AppStorage("ignoredAppUpdateVersion") var ignoredAppUpdateVersion: String = ""
     @AppStorage("cachedKimiLatestVersion") var cachedKimiLatestVersion: String = ""
@@ -4466,6 +4498,11 @@ final class KimiCodeBarModel: ObservableObject {
         Task { await loadKimiVersion() }
         startQuotaTimer()
         startUpdateTimer()
+        // 关闭检查更新时，清掉可能残留的待更新状态，避免启动后弹窗/通知
+        if !enableKimiCLIUpdateCheck {
+            pendingUpdateVersion = nil
+            snoozedKimiUpdateUntil = 0
+        }
         KimiArchiveManager.shared.restartTimer()
     }
 
@@ -4480,6 +4517,11 @@ final class KimiCodeBarModel: ObservableObject {
 
     func startUpdateTimer() {
         updateTimer?.invalidate()
+        // 关闭检查更新时不起后台 Timer，确保后台不再做任何 CLI 更新检查
+        guard enableKimiCLIUpdateCheck else {
+            updateTimer = nil
+            return
+        }
         let interval = max(10.0, updateCheckInterval) * 60
         updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
             Task { @MainActor in await self.checkForKimiCLIUpdate() }
@@ -5142,6 +5184,8 @@ final class KimiCodeBarModel: ObservableObject {
     }
 
     func checkForKimiCLIUpdate() async {
+        // 关闭检查更新时直接返回（双保险：拦联网 + 弹窗 + 系统通知，sendUpdateNotification 在此函数内调用）
+        guard enableKimiCLIUpdateCheck else { return }
         guard !isCheckingUpdate else { return }
         await MainActor.run {
             isCheckingUpdate = true
@@ -5203,6 +5247,8 @@ final class KimiCodeBarModel: ObservableObject {
     }
 
     func checkCachedKimiUpdate() {
+        // 关闭检查更新时不基于缓存弹窗
+        guard enableKimiCLIUpdateCheck else { return }
         guard !cachedKimiLatestVersion.isEmpty,
               kimiVersion != LanguageManager.tr("未检测到"), kimiVersion != LanguageManager.tr("检测中…") else { return }
 
