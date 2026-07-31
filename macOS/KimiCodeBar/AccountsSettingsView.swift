@@ -2,8 +2,9 @@ import SwiftUI
 
 // MARK: - 账号设置页
 
-/// 设置窗口「多账号」页：管理多账号（列表 / 设主 / 重命名 / 删除 / 重新授权 / 添加账号）。
-/// 数据全部来自 KimiCodeBarModel.shared（Phase 1 多账号数据层）。
+/// 设置窗口「账号管理」页：统一管理全部账号（列表 / 设主 / 重命名 / 删除 / 重新授权 / 添加账号）。
+/// 添加账号支持两种方式：浏览器授权登录（OAuth）与 API Key 登录，用户自选。
+/// 数据全部来自 KimiCodeBarModel.shared（统一账号管理数据层）。
 struct AccountsSettingsView: View {
     @StateObject private var model = KimiCodeBarModel.shared
     @StateObject private var languageManager = LanguageManager.shared
@@ -23,28 +24,46 @@ struct AccountsSettingsView: View {
     @State private var showCliSwitchConfirm = false
     @State private var cliSwitchError: String?
 
+    // 添加账号：方式选择 / API Key 表单状态
+    @State private var showsMethodChooser = false
+    @State private var showsApiKeyForm = false
+    @State private var apiKeyInput = ""
+    @State private var apiKeyAlias = ""
+    @State private var isAddingApiKey = false
+    @State private var apiKeyError: String?
+
+    // 修改 API Key 弹窗状态
+    @State private var editingKeyAccount: KimiAccount?
+    @State private var editKeyInput = ""
+    @State private var showEditKeyAlert = false
+    @State private var editKeyError: String?
+
     /// 是否展示「添加账号」卡片：
-    /// 有账号、授权流程进行中、或授权失败有待展示的错误时展示。
+    /// 有账号、授权流程进行中、授权失败有待展示的错误、或正在选择添加方式 / 填写 API Key 时展示。
     private var showsAddAccountCard: Bool {
         !model.accounts.isEmpty || model.oauthLoginInProgress || model.oauthLoginError != nil
+            || showsMethodChooser || showsApiKeyForm
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                LText("多账号")
+                LText("账号管理")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(.kimiTextPrimary)
 
-                // 账号列表
-                SettingsCard {
-                    if model.accounts.isEmpty {
+                // 账号列表：每个账号一张独立卡片
+                if model.accounts.isEmpty {
+                    SettingsCard {
                         emptyState
-                    } else {
-                        LazyVStack(alignment: .leading, spacing: 0) {
-                            ForEach(model.accounts) { account in
+                    }
+                } else {
+                    LazyVStack(alignment: .leading, spacing: 12) {
+                        ForEach(model.accounts) { account in
+                            SettingsCard {
                                 AccountRow(
                                     displayName: model.displayName(for: account),
+                                    credential: account.credential,
                                     isPrimary: account.id == model.primaryAccountID,
                                     isCliActive: account.id == model.cliActiveAccountID,
                                     state: model.accountStates[account.id] ?? .idle,
@@ -61,15 +80,15 @@ struct AccountsSettingsView: View {
                                         accountPendingDeletion = account
                                         showDeleteConfirm = true
                                     },
-                                    onReauthorize: { model.reauthorizeAccount(account.id) }
+                                    onReauthorize: { model.reauthorizeAccount(account.id) },
+                                    onEditKey: {
+                                        editingKeyAccount = account
+                                        editKeyInput = ""
+                                        showEditKeyAlert = true
+                                    }
                                 )
-
-                                if account.id != model.accounts.last?.id {
-                                    SettingsCardDivider()
-                                }
                             }
                         }
-                        .padding(.vertical, 4)
                     }
                 }
 
@@ -79,6 +98,10 @@ struct AccountsSettingsView: View {
                         VStack(alignment: .leading, spacing: 0) {
                             if model.oauthLoginInProgress, let auth = model.oauthDeviceAuth {
                                 AddAccountAuthorizingView(auth: auth)
+                            } else if showsApiKeyForm {
+                                apiKeyForm
+                            } else if showsMethodChooser {
+                                methodChooser
                             } else {
                                 addAccountRow
                             }
@@ -152,6 +175,32 @@ struct AccountsSettingsView: View {
                 Text(cliSwitchError)
             }
         }
+        .alert(LanguageManager.tr("修改 API Key"), isPresented: $showEditKeyAlert) {
+            SecureField(LanguageManager.tr("sk-kimi-..."), text: $editKeyInput)
+            Button(LanguageManager.tr("保存")) {
+                if let account = editingKeyAccount {
+                    let key = editKeyInput
+                    Task {
+                        if let error = await model.updateApiKey(for: account.id, key: key) {
+                            editKeyError = error
+                        }
+                    }
+                }
+            }
+            Button(LanguageManager.tr("取消"), role: .cancel) {}
+        } message: {
+            Text(LanguageManager.tr("输入新的 API Key，验证通过后立即生效。"))
+        }
+        .alert(LanguageManager.tr("修改失败"), isPresented: Binding(
+            get: { editKeyError != nil },
+            set: { if !$0 { editKeyError = nil } }
+        )) {
+            Button(LanguageManager.tr("好"), role: .cancel) {}
+        } message: {
+            if let editKeyError {
+                Text(editKeyError)
+            }
+        }
     }
 
     // MARK: CLI 账号切换
@@ -188,6 +237,27 @@ struct AccountsSettingsView: View {
         }
     }
 
+    // MARK: 添加账号提交
+
+    private func submitApiKey() {
+        isAddingApiKey = true
+        apiKeyError = nil
+        Task {
+            let error = await model.addApiKeyAccount(
+                key: apiKeyInput,
+                alias: apiKeyAlias.isEmpty ? nil : apiKeyAlias
+            )
+            isAddingApiKey = false
+            if let error {
+                apiKeyError = error
+            } else {
+                apiKeyInput = ""
+                apiKeyAlias = ""
+                showsApiKeyForm = false
+            }
+        }
+    }
+
     // MARK: 空状态
 
     private var emptyState: some View {
@@ -208,7 +278,7 @@ struct AccountsSettingsView: View {
                 title: languageManager.tr("添加账号"),
                 disabled: model.oauthLoginInProgress
             ) {
-                model.startOAuthLogin()
+                showsMethodChooser = true
             }
             .padding(.top, 4)
         }
@@ -230,7 +300,7 @@ struct AccountsSettingsView: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.kimiTextPrimary)
 
-                LText("通过浏览器授权添加一个 Kimi 账号")
+                LText("授权登录或 API Key 登录")
                     .font(.system(size: 12))
                     .foregroundStyle(.kimiTextSecondary)
             }
@@ -243,12 +313,127 @@ struct AccountsSettingsView: View {
                     .controlSize(.small)
             } else {
                 AccountPrimaryButton(title: languageManager.tr("添加账号")) {
-                    model.startOAuthLogin()
+                    showsMethodChooser = true
                 }
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 13)
+    }
+
+    // MARK: 添加账号：方式选择
+
+    /// 点击「添加账号」后先让用户选择登录方式：浏览器授权（OAuth）或手动填写 API Key。
+    private var methodChooser: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 10) {
+                LText("选择添加方式")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.kimiTextPrimary)
+
+                Spacer()
+
+                CancelChipButton(title: languageManager.tr("取消")) {
+                    showsMethodChooser = false
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
+
+            SettingsCardDivider()
+
+            HStack(spacing: 10) {
+                SettingsOptionCard(
+                    title: languageManager.tr("授权登录"),
+                    subtitle: languageManager.tr("浏览器授权，推荐"),
+                    iconName: "person.badge.key",
+                    isSelected: false
+                ) {
+                    showsMethodChooser = false
+                    model.startOAuthLogin()
+                }
+
+                SettingsOptionCard(
+                    title: languageManager.tr("API Key 登录"),
+                    subtitle: languageManager.tr("手动填写 API Key"),
+                    iconName: "key",
+                    isSelected: false
+                ) {
+                    showsMethodChooser = false
+                    showsApiKeyForm = true
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
+        }
+    }
+
+    // MARK: 添加账号：API Key 表单
+
+    private var apiKeyForm: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 10) {
+                LText("API Key 登录")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.kimiTextPrimary)
+
+                Spacer()
+
+                CancelChipButton(title: languageManager.tr("取消")) {
+                    showsApiKeyForm = false
+                    apiKeyInput = ""
+                    apiKeyAlias = ""
+                    apiKeyError = nil
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
+
+            SettingsCardDivider()
+
+            VStack(alignment: .leading, spacing: 10) {
+                SecureField(LanguageManager.tr("sk-kimi-..."), text: $apiKeyInput)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.kimiTextPrimary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(Color.kimiTextPrimary.opacity(0.06))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                TextField(LanguageManager.tr("别名（可选）"), text: $apiKeyAlias)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.kimiTextPrimary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(Color.kimiTextPrimary.opacity(0.06))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                HStack(spacing: 10) {
+                    AccountPrimaryButton(
+                        title: isAddingApiKey ? languageManager.tr("验证中…") : languageManager.tr("保存"),
+                        disabled: apiKeyInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isAddingApiKey
+                    ) {
+                        submitApiKey()
+                    }
+
+                    if isAddingApiKey {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
+
+            if let apiKeyError {
+                SettingsCardDivider()
+                ErrorMessageView(message: apiKeyError)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+            }
+        }
     }
 }
 
@@ -256,6 +441,7 @@ struct AccountsSettingsView: View {
 
 private struct AccountRow: View {
     let displayName: String
+    let credential: AccountCredential
     let isPrimary: Bool
     let isCliActive: Bool
     let state: KimiAccountState
@@ -266,76 +452,118 @@ private struct AccountRow: View {
     let onRename: () -> Void
     let onDelete: () -> Void
     let onReauthorize: () -> Void
+    let onEditKey: () -> Void
 
     @StateObject private var languageManager = LanguageManager.shared
 
+    /// API Key 账号不能写入 CLI 凭证（CLI 只认 access/refresh token 对），不显示「切换账号」。
+    private var isOAuth: Bool {
+        if case .oauth = credential { return true }
+        return false
+    }
+
+    /// 账号头像：OAuth 人像、API Key 钥匙，圆角方块底色跟随凭证类型
+    private var avatar: some View {
+        Image(systemName: isOAuth ? "person.fill" : "key.fill")
+            .font(.system(size: 13, weight: .medium))
+            .foregroundStyle(isOAuth ? Color.kimiBlue : Color.kimiTextSecondary)
+            .frame(width: 28, height: 28)
+            .background((isOAuth ? Color.kimiBlue : Color.kimiTextSecondary).opacity(0.12))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // 第一行：账号名称 + 状态标签
-            HStack(spacing: 6) {
-                Text(displayName)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.kimiTextPrimary)
-                    .lineLimit(1)
+        HStack(spacing: 14) {
+            avatar
 
-                if isPrimary {
-                    StatusTag(text: languageManager.tr("主账号"), color: .kimiBlue)
+            VStack(alignment: .leading, spacing: 0) {
+                // 上部：账号名称 + 状态标签
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Text(displayName)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.kimiTextPrimary)
+                            .lineLimit(1)
+
+                        if isPrimary {
+                            StatusTag(text: languageManager.tr("主账号"), color: .kimiBlue)
+                        }
+
+                        if !isOAuth {
+                            StatusTag(text: "API Key", color: .kimiTextSecondary)
+                        }
+
+                        if isCliActive {
+                            StatusTag(text: languageManager.tr("CLI 使用中"), color: .green)
+                        }
+
+                        // 会员等级体系调整期：API Key 渠道取到的等级不可靠，暂只对 OAuth 账号展示
+                        if isOAuth, let membershipLevel, !membershipLevel.isEmpty {
+                            StatusTag(text: KimiQuota.membershipDisplayName(membershipLevel), color: .purple)
+                        }
+
+                        if case .unauthorized = state {
+                            StatusTag(text: languageManager.tr("登录失效"), color: .red)
+                        }
+                    }
+
+                    statusLine
                 }
+                .padding(.bottom, 12)
 
-                if isCliActive {
-                    StatusTag(text: languageManager.tr("CLI 使用中"), color: .green)
-                }
+                // 分隔线：与账号名左对齐（SettingsCardDivider 自带 16pt 左缩进，此处不用）
+                Divider()
+                    .background(Color.kimiTextPrimary.opacity(0.08))
 
-                if let membershipLevel, !membershipLevel.isEmpty {
-                    StatusTag(text: KimiQuota.membershipDisplayName(membershipLevel), color: .purple)
-                }
-
-                if case .unauthorized = state {
-                    StatusTag(text: languageManager.tr("登录失效"), color: .red)
-                }
-            }
-
-            statusLine
-
-            // 第二行：全部操作按钮横排展开
-            HStack(spacing: 8) {
-                AccountActionButton(
-                    title: languageManager.tr("设为主账号"),
-                    disabled: isPrimary,
-                    action: onSetPrimary
-                )
-
-                AccountActionButton(
-                    title: languageManager.tr("重命名"),
-                    action: onRename
-                )
-
-                if case .unauthorized = state {
+                // 下部：全部操作按钮横排展开
+                HStack(spacing: 8) {
                     AccountActionButton(
-                        title: languageManager.tr("重新授权"),
-                        color: .kimiBlue,
-                        hoveredColor: .kimiBlue,
-                        disabled: reauthorizeDisabled,
-                        action: onReauthorize
+                        title: languageManager.tr("设为主账号"),
+                        disabled: isPrimary,
+                        action: onSetPrimary
                     )
-                } else {
-                    AccountActionButton(
-                        title: languageManager.tr("切换账号"),
-                        disabled: isCliActive,
-                        action: onSwitchCli
-                    )
-                    .help(languageManager.tr("将该账号的凭证写入 Kimi CLI，更换 CLI 的登录账号"))
-                }
 
-                AccountActionButton(
-                    title: languageManager.tr("删除"),
-                    destructive: true,
-                    action: onDelete
-                )
+                    AccountActionButton(
+                        title: languageManager.tr("重命名"),
+                        action: onRename
+                    )
+
+                    if case .unauthorized = state {
+                        if isOAuth {
+                            AccountActionButton(
+                                title: languageManager.tr("重新授权"),
+                                color: .kimiBlue,
+                                hoveredColor: .kimiBlue,
+                                disabled: reauthorizeDisabled,
+                                action: onReauthorize
+                            )
+                        } else {
+                            AccountActionButton(
+                                title: languageManager.tr("修改 Key"),
+                                color: .kimiBlue,
+                                hoveredColor: .kimiBlue,
+                                action: onEditKey
+                            )
+                        }
+                    } else if isOAuth {
+                        AccountActionButton(
+                            title: languageManager.tr("切换账号"),
+                            disabled: isCliActive,
+                            action: onSwitchCli
+                        )
+                        .help(languageManager.tr("将该账号的凭证写入 Kimi CLI，更换 CLI 的登录账号"))
+                    }
+
+                    AccountActionButton(
+                        title: languageManager.tr("删除"),
+                        destructive: true,
+                        action: onDelete
+                    )
+                }
+                .padding(.top, 12)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(16)
     }
 
     // MARK: 状态行
@@ -373,7 +601,6 @@ private struct AddAccountAuthorizingView: View {
 
     @StateObject private var model = KimiCodeBarModel.shared
 
-    @State private var isHoveredCancel = false
     @State private var isHoveredCopyCode = false
     @State private var isHoveredCopyLink = false
     @State private var isHoveredOpen = false
@@ -387,24 +614,15 @@ private struct AddAccountAuthorizingView: View {
                 LoadingRing()
                     .frame(width: 16, height: 16)
 
-                LText("等待浏览器授权…")
+                LText("等待授权…")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.kimiTextPrimary)
 
                 Spacer()
 
-                Button(action: { model.cancelOAuthLogin() }) {
-                    LText("取消")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(isHoveredCancel ? .kimiTextPrimary : .kimiTextSecondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(isHoveredCancel ? Color.kimiTextPrimary.opacity(0.14) : Color.kimiTextPrimary.opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                CancelChipButton(title: LanguageManager.tr("取消")) {
+                    model.cancelOAuthLogin()
                 }
-                .buttonStyle(.plain)
-                .cursor(.pointingHand)
-                .onHover { isHoveredCancel = $0 }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 13)
@@ -498,6 +716,31 @@ private struct AddAccountAuthorizingView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 13)
         }
+    }
+}
+
+// MARK: - 取消按钮（小号）
+
+/// 卡片右上角的小号「取消」按钮：悬停高亮 + 手型光标。
+private struct CancelChipButton: View {
+    let title: String
+    let action: () -> Void
+
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(isHovered ? .kimiTextPrimary : .kimiTextSecondary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(isHovered ? Color.kimiTextPrimary.opacity(0.14) : Color.kimiTextPrimary.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+        .buttonStyle(.plain)
+        .cursor(.pointingHand)
+        .onHover { isHovered = $0 }
     }
 }
 

@@ -53,14 +53,15 @@ enum CliCredentialsService {
     }
 
     /// 在账号列表中查找与 CLI 凭证匹配的账号：优先比对 refresh_token，其次 access_token。
+    /// 仅匹配 OAuth 账号（API Key 账号没有 token 对，不参与 CLI 切换）。
     /// CLI 轮换 token 后两边不再一致，返回 nil（「CLI 使用中」标签随之消失，符合预期）。
     static func matchedAccountID(token: KimiOAuthToken?, in accounts: [KimiAccount]) -> UUID? {
         guard let token else { return nil }
         if !token.refreshToken.isEmpty,
-           let match = accounts.first(where: { $0.token.refreshToken == token.refreshToken }) {
+           let match = accounts.first(where: { $0.oauthToken?.refreshToken == token.refreshToken }) {
             return match.id
         }
-        return accounts.first(where: { $0.token.accessToken == token.accessToken })?.id
+        return accounts.first(where: { $0.oauthToken?.accessToken == token.accessToken })?.id
     }
 
     /// 把账号 token 原子写入 CLI 凭证文件（目录 0700 / 文件 0600，tmp + replace）。

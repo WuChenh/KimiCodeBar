@@ -133,6 +133,15 @@ extension ShapeStyle where Self == Color {
         )
     }
 
+    /// 设置窗口侧边导航栏底色：与内容区（kimiPanelBackground）拉开层次——
+    /// 浅色下略深半档、深色下略亮半档，一眼区分导航与内容
+    static var kimiSidebarBackground: Color {
+        dynamicColor(
+            light: NSColor(red: 0.86, green: 0.86, blue: 0.89, alpha: 1.0),
+            dark: NSColor(red: 0.09, green: 0.11, blue: 0.18, alpha: 1.0)
+        )
+    }
+
     static var kimiCardBackground: Color {
         dynamicColor(
             light: NSColor(white: 0.99, alpha: 1.0),
@@ -396,9 +405,11 @@ final class WindowVisibilityView: NSView {
 struct AnimatedKimiCodeLogo: View {
     var width: CGFloat = 44
     let isAnimating: Bool
+    /// 配色风格：默认蓝底实色；彩色卡片背景上（如关于页渐变卡片）用白色描边版
+    var style: KimiCodeLogoLayerView.Style = .filled
 
     var body: some View {
-        KimiCodeLogoLayerViewWrapper(width: width, isAnimating: isAnimating)
+        KimiCodeLogoLayerViewWrapper(width: width, isAnimating: isAnimating, style: style)
             .frame(width: width, height: width * 22 / 32)
     }
 }
@@ -406,22 +417,35 @@ struct AnimatedKimiCodeLogo: View {
 struct KimiCodeLogoLayerViewWrapper: NSViewRepresentable {
     let width: CGFloat
     let isAnimating: Bool
+    var style: KimiCodeLogoLayerView.Style = .filled
 
     func makeNSView(context: Context) -> KimiCodeLogoLayerView {
         let view = KimiCodeLogoLayerView(frame: NSRect(x: 0, y: 0, width: width, height: width * 22 / 32))
         view.logoWidth = width
+        view.style = style
         return view
     }
 
     func updateNSView(_ nsView: KimiCodeLogoLayerView, context: Context) {
         nsView.logoWidth = width
+        nsView.style = style
         nsView.setAnimationsPaused(!isAnimating)
     }
 }
 
 final class KimiCodeLogoLayerView: NSView {
+    /// Logo 配色风格：filled 蓝底实色（默认，用于常规底色）；outline 白色描边（用于彩色渐变背景）
+    enum Style {
+        case filled
+        case outline
+    }
+
     var logoWidth: CGFloat = 44 {
         didSet { updateLayout() }
+    }
+
+    var style: Style = .filled {
+        didSet { applyStyle() }
     }
 
     private let bodyLayer = CAShapeLayer()
@@ -444,30 +468,48 @@ final class KimiCodeLogoLayerView: NSView {
     private func setupLayers() {
         wantsLayer = true
 
-        let kimiBlue = NSColor(red: 0.23, green: 0.51, blue: 0.96, alpha: 1.0)
-
-        bodyLayer.fillColor = kimiBlue.cgColor
-        bodyLayer.shadowColor = kimiBlue.withAlphaComponent(0.35).cgColor
-        bodyLayer.shadowOpacity = 1
-        bodyLayer.shadowRadius = 8
-        bodyLayer.shadowOffset = CGSize(width: 0, height: -3)
-
-        updateEyeColors()
-
         layer?.addSublayer(bodyLayer)
         layer?.addSublayer(leftEyeLayer)
         layer?.addSublayer(rightEyeLayer)
 
+        applyStyle()
         updateLayout()
     }
 
+    /// 按 style 应用身体与眼睛配色（outline 时身体改为白色描边、去掉蓝色光晕）
+    private func applyStyle() {
+        switch style {
+        case .filled:
+            let kimiBlue = NSColor(red: 0.23, green: 0.51, blue: 0.96, alpha: 1.0)
+            bodyLayer.fillColor = kimiBlue.cgColor
+            bodyLayer.strokeColor = nil
+            bodyLayer.lineWidth = 0
+            bodyLayer.shadowColor = kimiBlue.withAlphaComponent(0.35).cgColor
+            bodyLayer.shadowOpacity = 1
+            bodyLayer.shadowRadius = 8
+            bodyLayer.shadowOffset = CGSize(width: 0, height: -3)
+        case .outline:
+            bodyLayer.fillColor = nil
+            bodyLayer.strokeColor = NSColor.white.withAlphaComponent(0.9).cgColor
+            bodyLayer.lineWidth = max(1.2, 1.2 * scale)
+            bodyLayer.shadowOpacity = 0
+        }
+        updateEyeColors()
+    }
+
     private func updateEyeColors() {
-        let eyeColor = NSColor(name: nil, dynamicProvider: { appearance in
-            let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            return isDark
-                ? NSColor(red: 0x18 / 255.0, green: 0x18 / 255.0, blue: 0x17 / 255.0, alpha: 1.0)
-                : NSColor.white
-        })
+        let eyeColor: NSColor
+        switch style {
+        case .filled:
+            eyeColor = NSColor(name: nil, dynamicProvider: { appearance in
+                let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                return isDark
+                    ? NSColor(red: 0x18 / 255.0, green: 0x18 / 255.0, blue: 0x17 / 255.0, alpha: 1.0)
+                    : NSColor.white
+            })
+        case .outline:
+            eyeColor = NSColor.white.withAlphaComponent(0.9)
+        }
         leftEyeLayer.fillColor = eyeColor.cgColor
         rightEyeLayer.fillColor = eyeColor.cgColor
     }
@@ -490,6 +532,9 @@ final class KimiCodeLogoLayerView: NSView {
             xRadius: 6 * scale,
             yRadius: 6 * scale
         ).cgPath
+        if style == .outline {
+            bodyLayer.lineWidth = max(1.2, 1.2 * scale)
+        }
 
         let eyeWidth: CGFloat = 2.8 * scale
         let eyeHeight: CGFloat = 8 * scale
@@ -752,38 +797,8 @@ struct KimiMenu: View {
 
             // 用量卡片
             VStack(spacing: 12) {
-                if model.loginMethod == .oauth && model.accounts.count > 1 {
-                    // OAuth 多账号：账号紧凑行列表，点击行展开对应账号的卡片组
-                    AccountQuotaListView()
-                } else {
-                    // API Key 模式（或 OAuth 尚无账号）：保持原有卡片布局
-                    HStack(spacing: 12) {
-                        UsageCard(
-                            title: languageManager.tr("本周用量"),
-                            subtitle: nil,
-                            percentage: model.quota?.weekly.percentage ?? 0,
-                            reset: model.quota?.weekly.timeUntilReset ?? "--",
-                            color: .kimiBlue,
-                            isLoading: model.isLoading
-                        )
-
-                        UsageCard(
-                            title: languageManager.tr("5小时用量"),
-                            subtitle: nil,
-                            percentage: model.quota?.fiveHour.percentage ?? 0,
-                            reset: model.quota?.fiveHour.timeUntilReset ?? "--",
-                            color: .orange,
-                            isLoading: model.isLoading
-                        )
-                    }
-
-                    if model.showBoosterWalletCard {
-                        BoosterWalletCard(
-                            wallet: model.quota?.boosterWallet,
-                            isLoading: model.isLoading
-                        )
-                    }
-                }
+                // 账号配额区：单账号直接出大卡片，多账号每账号一张紧凑卡片（内部左右双列压缩布局）
+                AccountQuotaListView()
 
                 // 本机消耗量卡片：扫描本地会话记录（wire.jsonl usage.record）得出 Token 消耗
                 if model.showLocalUsageCard {
@@ -1034,7 +1049,6 @@ struct LoginOverlayView: View {
                 .foregroundStyle(.kimiTextPrimary)
 
             Button(action: {
-                model.loginMethod = .oauth
                 model.startOAuthLogin()
             }) {
                 LText("Kimi 登录")
@@ -1049,7 +1063,7 @@ struct LoginOverlayView: View {
             .cursor(.pointingHand)
             .onHover { isHoveredLogin = $0 }
 
-            Button(action: { SettingsWindowManager.shared.show() }) {
+            Button(action: { SettingsWindowManager.shared.show(pane: .accounts) }) {
                 LText("其他登录方式")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(isHoveredSettings ? .kimiTextPrimary : .kimiTextSecondary)
@@ -1069,7 +1083,7 @@ struct LoginOverlayView: View {
                     LoadingRing()
                         .frame(width: 14, height: 14)
 
-                    LText("等待浏览器授权…")
+                    LText("等待授权…")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.kimiTextPrimary)
                 }
@@ -1351,7 +1365,7 @@ struct BoosterWalletCard: View {
 // MARK: - 账号配额区（OAuth 多账号）
 
 /// OAuth 账号配额区：单账号直接展示完整用量卡片组（本周/5小时用量 + 加油包）；
-/// 多账号时每个账号一张完整卡片纵向罗列，无展开/收起交互。
+/// 多账号时每个账号一张紧凑卡片纵向罗列（内部为左右双列压缩布局），无展开/收起交互。
 struct AccountQuotaListView: View {
     @StateObject private var model = KimiCodeBarModel.shared
 
@@ -1420,7 +1434,8 @@ private struct SingleAccountQuotaCards: View {
                     )
                 }
 
-                if model.showBoosterWalletCard {
+                // 加油包按官方后台开通状态自动显示：已开通才展示，未开通不占位
+                if quota?.boosterWallet?.isEnabled == true {
                     BoosterWalletCard(
                         wallet: quota?.boosterWallet,
                         isLoading: isLoadingState
@@ -1433,7 +1448,8 @@ private struct SingleAccountQuotaCards: View {
 
 // MARK: - 多账号配额卡片
 
-/// 多账号：每个账号一张完整卡片。头部为账号名与标签，下方纵向列出周/5小时限额行。
+/// 多账号：每个账号一张紧凑卡片。头部为账号名与标签，下方复刻单账号 UsageCard 的
+/// 左右双列布局（本周 / 5小时），信息层级与尺寸全面压缩，多账号时整组高度可控。
 private struct AccountQuotaCard: View {
     let account: KimiAccount
     let isPrimary: Bool
@@ -1457,19 +1473,25 @@ private struct AccountQuotaCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             // 头部：账号名 + 标签行（主账号 / 会员等级 / 登录失效）
+            // 账号名刻意用次级色弱化：整张卡片唯一的高亮元素是配额大数字，保证第一眼聚焦额度
             HStack(spacing: 6) {
                 Text(model.displayName(for: account))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.kimiTextPrimary)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.kimiTextSecondary)
                     .lineLimit(1)
 
                 if isPrimary {
                     tagPill(languageManager.tr("主账号"), color: .kimiBlue)
                 }
 
-                if let level = quota?.membershipLevel, !level.isEmpty {
+                if case .apiKey = account.credential {
+                    tagPill("API Key", color: .kimiTextSecondary)
+                }
+
+                // 会员等级体系调整期：API Key 渠道取到的等级不可靠，暂只对 OAuth 账号展示
+                if case .oauth = account.credential, let level = quota?.membershipLevel, !level.isEmpty {
                     tagPill(KimiQuota.membershipDisplayName(level), color: .purple)
                 }
 
@@ -1486,13 +1508,13 @@ private struct AccountQuotaCard: View {
             }
 
             if case .unauthorized = state {
-                // 凭证保留，引导到设置-多账号重新授权（管理操作在设置页完成）
+                // 凭证保留，引导到设置-账号管理处理（管理操作在设置页完成）
                 HStack(spacing: 6) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.red)
 
-                    LText("登录失效，请到设置-多账号重新授权")
+                    LText("登录失效，请到设置-账号管理处理")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.kimiTextSecondary)
                 }
@@ -1505,26 +1527,43 @@ private struct AccountQuotaCard: View {
                         .lineLimit(1)
                 }
 
-                AccountQuotaLine(
-                    title: languageManager.tr("本周用量"),
-                    reset: quota?.weekly.timeUntilReset,
-                    percentage: quota?.weekly.percentage,
-                    color: .kimiBlue,
-                    isLoading: isLoadingState
-                )
+                // 左右双列：本周 / 5小时，复刻单账号 UsageCard 的并排布局（深度压缩版）
+                HStack(spacing: 12) {
+                    CompactQuotaColumn(
+                        title: languageManager.tr("本周用量"),
+                        reset: quota?.weekly.timeUntilReset,
+                        percentage: quota?.weekly.percentage,
+                        color: .kimiBlue,
+                        isLoading: isLoadingState
+                    )
 
-                AccountQuotaLine(
-                    title: languageManager.tr("5小时用量"),
-                    reset: quota?.fiveHour.timeUntilReset,
-                    percentage: quota?.fiveHour.percentage,
-                    color: .orange,
-                    isLoading: isLoadingState
-                )
+                    // 两列之间的细分隔线，呼应「一边是周限额、一边是5小时限额」的分区感
+                    Rectangle()
+                        .fill(Color.kimiTextPrimary.opacity(0.08))
+                        .frame(width: 1)
+                        .padding(.vertical, 2)
+
+                    CompactQuotaColumn(
+                        title: languageManager.tr("5小时用量"),
+                        reset: quota?.fiveHour.timeUntilReset,
+                        percentage: quota?.fiveHour.percentage,
+                        color: .orange,
+                        isLoading: isLoadingState
+                    )
+                }
+
+                // 加油包按官方后台开通状态自动显示：已开通才展示，未开通不占位
+                if quota?.boosterWallet?.isEnabled == true {
+                    AccountBoosterLine(
+                        wallet: quota?.boosterWallet,
+                        isLoading: isLoadingState
+                    )
+                }
             }
         }
         .padding(14)
         .background(Color.kimiCardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     /// 卡片头部的小号标签：与设置页 StatusTag 同一比例（9pt / 0.12 底色 / 圆角 4）
@@ -1539,11 +1578,12 @@ private struct AccountQuotaCard: View {
     }
 }
 
-// MARK: - 限额行
+// MARK: - 紧凑限额列
 
-/// 单条限额行：标题 + 重置时间 + 大百分比，下方通栏胶囊进度条。
-/// 进度条用同色系横向渐变，视觉对齐 UsageCard 的胶囊轨道与投影。
-private struct AccountQuotaLine: View {
+/// 多账号卡片内的单列限额。视觉层级复刻单账号 UsageCard：小号标题在上，
+/// 超大百分比做视觉主角（第一眼聚焦额度），下方细进度条与重置时间为次要信息。
+/// 相比单账号大卡片仅做尺寸收敛：标题 11pt、数值 24pt、进度条 4pt、重置时间 10pt。
+private struct CompactQuotaColumn: View {
     let title: String
     let reset: String?
     let percentage: Int?
@@ -1555,36 +1595,37 @@ private struct AccountQuotaLine: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(title)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.kimiTextPrimary)
+        VStack(alignment: .leading, spacing: 4) {
+            // 标题行：主色小字压到 0.85 透明度，亮度比大百分比低一丢丢
+            Text(title)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.kimiTextPrimary.opacity(0.85))
+                .lineLimit(1)
 
-                Spacer()
-
-                if isLoading {
-                    LoadingRing()
-                        .frame(width: 12, height: 12)
-                } else {
-                    if let reset {
-                        Text(reset)
-                            .font(.system(size: 11))
-                            .foregroundStyle(.kimiTextTertiary)
-                    }
-
-                    if percentage != nil {
-                        Text("\(clampedPercentage)%")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+            // 大百分比：整列唯一的全亮元素（数字与 % 同亮），第一眼聚焦额度
+            ZStack(alignment: .leading) {
+                if !isLoading {
+                    if let percentage {
+                        Text("\(clampedPercentage)")
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
                             .monospacedDigit()
+                            .foregroundStyle(.kimiTextPrimary)
+                        + Text("%")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
                             .foregroundStyle(.kimiTextPrimary)
                     } else {
                         Text("--")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
                             .foregroundStyle(.kimiTextTertiary)
                     }
                 }
+
+                if isLoading {
+                    LoadingRing()
+                        .frame(width: 18, height: 18)
+                }
             }
+            .frame(height: 28)
 
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
@@ -1601,7 +1642,106 @@ private struct AccountQuotaLine: View {
                                 endPoint: .trailing
                             )
                         )
-                        .shadow(color: color.opacity(0.4), radius: 3, x: 0, y: 1)
+                        .shadow(color: color.opacity(0.4), radius: 2, x: 0, y: 1)
+                }
+            }
+            .frame(height: 4)
+
+            Text(reset ?? "--")
+                .font(.system(size: 10))
+                .foregroundStyle(.kimiTextTertiary)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - 加油包余额行
+
+/// 多账号卡片内的加油包余额行：标题 + 启用状态标签，右侧本月消费与余额；
+/// 下方橙色胶囊进度条（本月消费 / 月度上限），字号与进度条规格对齐 CompactQuotaColumn。
+private struct AccountBoosterLine: View {
+    let wallet: BoosterWallet?
+    let isLoading: Bool
+
+    private var progress: Double {
+        guard let wallet, wallet.monthlyChargeLimitEnabled, wallet.monthlyChargeLimitYuan > 0 else { return 0 }
+        return min(wallet.monthlyUsedYuan / wallet.monthlyChargeLimitYuan, 1.0)
+    }
+
+    private var limitText: String {
+        guard let wallet, wallet.monthlyChargeLimitEnabled, wallet.monthlyChargeLimitCents > 0 else {
+            return LanguageManager.tr("无限制")
+        }
+        return formatCurrency(wallet.monthlyChargeLimitYuan, currency: wallet.currency)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                LText("加油包余额")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.kimiTextTertiary)
+
+                if let wallet {
+                    LText(wallet.isEnabled ? "已启用" : "未启用")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundStyle(wallet.isEnabled ? .green : .kimiTextTertiary)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1)
+                        .background((wallet.isEnabled ? Color.green : Color.kimiTextTertiary).opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                }
+
+                Spacer()
+
+                if isLoading {
+                    LoadingRing()
+                        .frame(width: 10, height: 10)
+                } else {
+                    if let wallet {
+                        HStack(spacing: 4) {
+                            LText("本月消费")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.kimiTextTertiary)
+
+                            Text("\(formatCurrency(wallet.monthlyUsedYuan, currency: wallet.currency)) / \(limitText)")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.kimiTextTertiary)
+                                .monospacedDigit()
+                        }
+                    }
+
+                    if let wallet {
+                        Text(formatCurrency(wallet.balanceYuan, currency: wallet.currency))
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(wallet.isEnabled ? .kimiTextPrimary : .kimiTextTertiary)
+                    } else {
+                        Text("--")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(.kimiTextTertiary)
+                    }
+                }
+            }
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .frame(height: 4)
+                        .foregroundStyle(Color.kimiTextPrimary.opacity(0.10))
+
+                    let fillColor: Color = (wallet?.isEnabled ?? false) ? .orange : .kimiTextTertiary
+                    Capsule()
+                        .frame(width: proxy.size.width * CGFloat(progress), height: 4)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [fillColor, fillColor.opacity(0.55)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .shadow(color: fillColor.opacity(0.4), radius: 2, x: 0, y: 1)
                 }
             }
             .frame(height: 4)
@@ -1611,7 +1751,7 @@ private struct AccountQuotaLine: View {
 
 // MARK: - 登录失效提示
 
-/// 单账号登录失效：凭证保留，引导到设置-多账号重新授权（管理操作在设置页完成）
+/// 单账号登录失效：凭证保留，引导到设置-账号管理处理（管理操作在设置页完成）
 private struct AccountUnauthorizedHint: View {
     var body: some View {
         HStack(spacing: 8) {
@@ -1619,7 +1759,7 @@ private struct AccountUnauthorizedHint: View {
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.red)
 
-            LText("登录失效，请到设置-多账号重新授权")
+            LText("登录失效，请到设置-账号管理处理")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.kimiTextSecondary)
 
@@ -1872,55 +2012,6 @@ struct ActionButton: View {
         .buttonStyle(.plain)
         .disabled(disabled)
         .cursor(disabled ? .arrow : .pointingHand)
-        .onHover { hovering in
-            isHovered = hovering
-        }
-    }
-}
-
-// MARK: - 链接行
-
-struct LinkRow: View {
-    let title: String
-    let icon: String?
-    let imageName: String?
-    let imageSize: CGFloat
-    let url: URL
-    @State private var isHovered = false
-
-    init(title: String, icon: String? = nil, imageName: String? = nil, imageSize: CGFloat = 14, url: URL) {
-        self.title = title
-        self.icon = icon
-        self.imageName = imageName
-        self.imageSize = imageSize
-        self.url = url
-    }
-
-    var body: some View {
-        Button(action: { NSWorkspace.shared.open(url) }) {
-            HStack(spacing: 6) {
-                if let imageName {
-                    Image(imageName)
-                        .renderingMode(.template)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: imageSize, height: imageSize)
-                } else if let icon {
-                    Image(systemName: icon)
-                        .font(.system(size: imageSize))
-                }
-
-                Text(title)
-                    .font(.system(size: 12, weight: .medium))
-            }
-            .foregroundStyle(isHovered ? Color.kimiBlue : .kimiTextSecondary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(isHovered ? Color.kimiBlue.opacity(0.12) : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
-        }
-        .buttonStyle(.plain)
-        .cursor(.pointingHand)
         .onHover { hovering in
             isHovered = hovering
         }
@@ -2672,13 +2763,18 @@ func dismissMenuBarPanel() {
 // MARK: - 设置窗口
 
 @MainActor
-final class SettingsWindowManager {
+final class SettingsWindowManager: ObservableObject {
     static let shared = SettingsWindowManager()
     private var window: NSWindow?
 
+    /// 当前选中的设置页，默认「账号管理」（设置面板第一项）
+    @Published var selectedPane: SettingsPane = .accounts
+
     private init() {}
 
-    func show() {
+    /// 打开设置窗口并定位到指定页（默认账号管理）
+    func show(pane: SettingsPane = .accounts) {
+        selectedPane = pane
         // LSUIElement 应用（无 Dock 图标）在关闭菜单栏面板后会立即失焦，
         // 必须先激活 App 再关面板，否则后续创建的设置窗口无法正确显示——
         // 窗口会成为 key 但不可见，重新打开菜单栏面板时所有鼠标事件
@@ -2705,7 +2801,13 @@ final class SettingsWindowManager {
         window.minSize = NSSize(width: 600, height: 520)
         window.collectionBehavior = [.managed, .canJoinAllSpaces]
         window.level = .floating
+        // 现代 macOS 设置窗口做法（参考豆包/系统设置）：隐藏标题文字 + 标题栏透明 +
+        // 内容延伸至窗口顶部，红绿灯按钮直接浮在侧边栏底色上，消除标题栏与内容区的割裂感
+        window.titleVisibility = .hidden
+        window.styleMask.insert(.fullSizeContentView)
         window.titlebarAppearsTransparent = true
+        // 标题栏视觉消失后，允许从空白区域拖动窗口
+        window.isMovableByWindowBackground = true
         window.backgroundColor = NSColor(name: nil, dynamicProvider: { appearance in
             let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
             return isDark
@@ -2884,8 +2986,8 @@ private func parseNestedFrontMatterValue(_ frontMatter: String, outerKey: String
 // MARK: - 设置根视图
 
 enum SettingsPane: String, CaseIterable, Identifiable {
-    case basic
     case accounts
+    case basic
     case panelCustom
     case archive
     case skills
@@ -2895,9 +2997,9 @@ enum SettingsPane: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
+        case .accounts: return LanguageManager.tr("账号管理")
         case .basic: return LanguageManager.tr("基本设置")
-        case .accounts: return LanguageManager.tr("多账号")
-        case .panelCustom: return LanguageManager.tr("面板自定义")
+        case .panelCustom: return LanguageManager.tr("外观样式")
         case .archive: return LanguageManager.tr("自动归档")
         case .skills: return LanguageManager.tr("技能管理")
         case .about: return LanguageManager.tr("关于")
@@ -2906,8 +3008,8 @@ enum SettingsPane: String, CaseIterable, Identifiable {
 
     var icon: String {
         switch self {
-        case .basic: return "gear"
         case .accounts: return "person.2"
+        case .basic: return "gear"
         case .panelCustom: return "rectangle.3.group"
         case .archive: return "archivebox"
         case .skills: return "puzzlepiece.extension"
@@ -2918,7 +3020,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
 
 struct SettingsRootView: View {
     @StateObject private var languageManager = LanguageManager.shared
-    @State private var selectedPane: SettingsPane = .basic
+    @StateObject private var windowManager = SettingsWindowManager.shared
 
     var body: some View {
         HSplitView {
@@ -2927,21 +3029,22 @@ struct SettingsRootView: View {
                     ForEach(SettingsPane.allCases) { pane in
                         SettingsSidebarItem(
                             pane: pane,
-                            isSelected: selectedPane == pane
+                            isSelected: windowManager.selectedPane == pane
                         ) {
-                            selectedPane = pane
+                            windowManager.selectedPane = pane
                         }
                     }
                 }
                 .padding(.horizontal, 12)
-                .padding(.top, 16)
+                // 顶部留出红绿灯按钮区域（窗口已改为全尺寸内容视图，按钮浮在侧边栏上）
+                .padding(.top, 40)
 
                 Spacer()
             }
             .frame(width: 180)
-            .background(Color.kimiPanelBackground)
+            .background(Color.kimiSidebarBackground)
 
-            switch selectedPane {
+            switch windowManager.selectedPane {
             case .basic:
                 BasicSettingsView()
             case .accounts:
@@ -3091,7 +3194,6 @@ struct SettingsCardDivider: View {
 // MARK: - 设置字段焦点
 
 enum APISettingField: Hashable {
-    case apiKey
     case quotaInterval
     case updateInterval
 }
@@ -3165,228 +3267,13 @@ struct SettingsOptionCard: View {
     }
 }
 
-// MARK: - OAuth 授权登录区域
-
-/// 基本设置中「授权登录」方式对应的凭证管理区域。
-/// 三个状态：未授权（去授权按钮）→ 授权中（展示 user_code 轮询）→ 已授权（状态 + 退出）。
-struct OAuthLoginSection: View {
-    @StateObject private var model = KimiCodeBarModel.shared
-
-    @State private var isHoveredStartLogin = false
-    @State private var isHoveredLogout = false
-    @State private var isHoveredCancel = false
-    @State private var isHoveredCopyCode = false
-    @State private var isHoveredReopen = false
-    @State private var isCodeCopied = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            if model.oauthLoginInProgress, let auth = model.oauthDeviceAuth {
-                authorizingContent(auth)
-            } else if model.oauthToken != nil {
-                authorizedContent
-            } else {
-                loginContent
-            }
-
-            if let error = model.oauthLoginError {
-                SettingsCardDivider()
-                ErrorMessageView(message: error)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-            }
-
-            if let error = model.errorMessage {
-                SettingsCardDivider()
-                ErrorMessageView(message: error)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-            }
-        }
-    }
-
-    // MARK: 未授权
-
-    private var loginContent: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "person.crop.circle")
-                .font(.system(size: 22, weight: .regular))
-                .foregroundStyle(.kimiTextTertiary)
-                .frame(width: 32, height: 32)
-
-            LText("未授权")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.kimiTextPrimary)
-
-            Spacer()
-
-            Button(action: { model.startOAuthLogin() }) {
-                ZStack {
-                    LText("去授权")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.white)
-                        .opacity(model.oauthLoginInProgress ? 0 : 1)
-
-                    if model.oauthLoginInProgress {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .scaleEffect(0.6)
-                            .frame(width: 16, height: 16)
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 7)
-                .background(model.oauthLoginInProgress ? Color.kimiBlue.opacity(0.6) : (isHoveredStartLogin ? Color.kimiBlue.opacity(0.85) : Color.kimiBlue))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-            .buttonStyle(.plain)
-            .disabled(model.oauthLoginInProgress)
-            .cursor(model.oauthLoginInProgress ? .arrow : .pointingHand)
-            .onHover { isHoveredStartLogin = $0 }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 13)
-    }
-
-    // MARK: 授权中
-
-    private func authorizingContent(_ auth: KimiDeviceAuthorization) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // 状态行
-            HStack(spacing: 10) {
-                LoadingRing()
-                    .frame(width: 16, height: 16)
-
-                LText("等待浏览器授权…")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.kimiTextPrimary)
-
-                Spacer()
-
-                Button(action: { model.cancelOAuthLogin() }) {
-                    LText("取消")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(isHoveredCancel ? .kimiTextPrimary : .kimiTextSecondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(isHoveredCancel ? Color.kimiTextPrimary.opacity(0.14) : Color.kimiTextPrimary.opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                }
-                .buttonStyle(.plain)
-                .cursor(.pointingHand)
-                .onHover { isHoveredCancel = $0 }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 13)
-
-            SettingsCardDivider()
-
-            // 授权码行
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    LText("授权码")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.kimiTextSecondary)
-
-                    Text(auth.userCode)
-                        .font(.system(size: 20, weight: .bold, design: .monospaced))
-                        .foregroundStyle(.kimiTextPrimary)
-                        .textSelection(.enabled)
-                }
-
-                Spacer()
-
-                Button(action: {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(auth.userCode, forType: .string)
-                    isCodeCopied = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        isCodeCopied = false
-                    }
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: isCodeCopied ? "checkmark" : "doc.on.doc")
-                            .font(.system(size: 11, weight: .medium))
-                        LText(isCodeCopied ? "已复制" : "复制")
-                            .font(.system(size: 12, weight: .medium))
-                    }
-                    .foregroundStyle(isHoveredCopyCode ? .kimiTextPrimary : .kimiTextSecondary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(isHoveredCopyCode ? Color.kimiTextPrimary.opacity(0.14) : Color.kimiTextPrimary.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                }
-                .buttonStyle(.plain)
-                .cursor(.pointingHand)
-                .onHover { isHoveredCopyCode = $0 }
-
-                if let urlString = auth.displayURL, let url = URL(string: urlString) {
-                    Button(action: { NSWorkspace.shared.open(url) }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "safari")
-                                .font(.system(size: 11, weight: .medium))
-                            LText("打开授权页")
-                                .font(.system(size: 12, weight: .medium))
-                        }
-                        .foregroundStyle(isHoveredReopen ? .white : .white.opacity(0.9))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(isHoveredReopen ? Color.kimiBlue.opacity(0.85) : Color.kimiBlue)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                    }
-                    .buttonStyle(.plain)
-                    .cursor(.pointingHand)
-                    .onHover { isHoveredReopen = $0 }
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 13)
-        }
-    }
-
-    // MARK: 已授权
-
-    private var authorizedContent: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 22, weight: .regular))
-                .foregroundStyle(.green)
-                .frame(width: 32, height: 32)
-
-            LText("已授权 Kimi 账号")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.kimiTextPrimary)
-
-            Spacer()
-
-            Button(action: { model.logoutOAuth() }) {
-                LText("退出登录")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(isHoveredLogout ? .red.opacity(0.9) : .red)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(isHoveredLogout ? Color.red.opacity(0.18) : Color.red.opacity(0.12))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-            }
-            .buttonStyle(.plain)
-            .cursor(.pointingHand)
-            .onHover { isHoveredLogout = $0 }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 13)
-    }
-}
-
 // MARK: - 基本设置
 
 struct BasicSettingsView: View {
-    @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var model = KimiCodeBarModel.shared
     @StateObject private var launchAtLoginManager = LaunchAtLoginManager.shared
     @StateObject private var languageManager = LanguageManager.shared
 
-    @State private var editingKey = ""
-    @State private var isEditingKey = false
     @State private var quotaIntervalText = "5"
     @State private var updateIntervalText = "30"
     @FocusState private var focusedField: APISettingField?
@@ -3398,140 +3285,12 @@ struct BasicSettingsView: View {
         )
     }
 
-    /// Token 登录方式下的 API Key 管理区域
-    private var apiKeySection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 12) {
-                if isEditingKey {
-                    SecureField("sk-kimi-...", text: $editingKey)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: .infinity)
-                        .focused($focusedField, equals: .apiKey)
-                        .onChange(of: editingKey) { _, newValue in
-                            let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
-                            if trimmed != newValue {
-                                editingKey = trimmed
-                            }
-                        }
-                } else {
-                    Text(maskedKey(model.key))
-                        .font(.system(size: 13, weight: .medium, design: .monospaced))
-                        .foregroundStyle(.kimiTextSecondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.kimiTextPrimary.opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                }
-
-                Button(action: {
-                    if isEditingKey {
-                        saveKey()
-                    } else {
-                        editingKey = model.key
-                        isEditingKey = true
-                        model.errorMessage = nil
-                        focusedField = .apiKey
-                    }
-                }) {
-                    LText(isEditingKey ? "保存" : "修改")
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.kimiBlue)
-                .disabled(isEditingKey && editingKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                .cursor(isEditingKey && editingKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .arrow : .pointingHand)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 13)
-
-            if let error = model.errorMessage {
-                SettingsCardDivider()
-                ErrorMessageView(message: error)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-            }
-
-            SettingsCardDivider()
-            SettingsCardRow(
-                title: languageManager.tr("获取 API Key"),
-                subtitle: languageManager.tr("前往 Kimi 控制台创建并复制 API Key。")
-            ) {
-                LinkRow(
-                    title: languageManager.tr("去控制台"),
-                    icon: "arrow.up.right",
-                    url: URL(string: "https://www.kimi.com/code/console")!
-                )
-            }
-        }
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 LText("基本设置")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(.kimiTextPrimary)
-
-                // 登录方式（默认授权登录，凭证独立存储，不影响 KimiCode CLI）
-                SettingsCard(title: languageManager.tr("登录方式")) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack(spacing: 10) {
-                            ForEach(LoginMethod.allCases) { method in
-                                SettingsOptionCard(
-                                    title: method.displayName,
-                                    subtitle: method.subtitle,
-                                    iconName: method.iconName,
-                                    isSelected: model.loginMethod == method
-                                ) {
-                                    model.loginMethod = method
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 13)
-
-                        SettingsCardDivider()
-
-                        if model.loginMethod == .oauth {
-                            OAuthLoginSection()
-                        } else {
-                            apiKeySection
-                        }
-                    }
-                }
-
-                // 外观主题
-                SettingsCard(title: languageManager.tr("外观主题")) {
-                    HStack(spacing: 10) {
-                        ForEach(AppTheme.allCases) { theme in
-                            SettingsOptionCard(
-                                title: theme.displayName,
-                                subtitle: nil,
-                                iconName: theme.iconName,
-                                isSelected: themeManager.theme == theme
-                            ) {
-                                themeManager.theme = theme
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 13)
-                }
-
-                // 语言
-                SettingsCard {
-                    SettingsCardRow(title: languageManager.tr("语言")) {
-                        Picker("", selection: $languageManager.language) {
-                            ForEach(AppLanguage.allCases) { language in
-                                Text(language.displayName).tag(language)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
-                        .frame(width: 220)
-                        .cursor(.pointingHand)
-                    }
-                }
 
                 // 启动
                 SettingsCard {
@@ -3586,39 +3345,18 @@ struct BasicSettingsView: View {
                     }
                 }
 
-                // 菜单栏样式
-                SettingsCard(title: languageManager.tr("菜单栏样式")) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        SettingsCardRow(title: languageManager.tr("显示样式")) {
-                            Picker("", selection: $model.menuBarDisplayScheme) {
-                                ForEach(MenuBarDisplayScheme.allCases) { scheme in
-                                    Text(scheme.displayName).tag(scheme)
-                                }
-                            }
-                            .pickerStyle(.segmented)
-                            .labelsHidden()
-                            .frame(width: 180)
-                        }
-
-                        SettingsCardDivider()
-                        SettingsCardRow(title: languageManager.tr("实时预览")) {
-                            if let quota = model.quota {
-                                Image(nsImage: MenuBarTextRenderer.image(
-                                    scheme: model.menuBarDisplayScheme,
-                                    weekly: quota.weekly.percentage,
-                                    fiveHour: quota.fiveHour.percentage
-                                ))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(Color.black)
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
-                            } else {
-                                Text("-- · --")
-                                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                                    .foregroundStyle(.secondary)
+                // 语言
+                SettingsCard {
+                    SettingsCardRow(title: languageManager.tr("语言")) {
+                        Picker("", selection: $languageManager.language) {
+                            ForEach(AppLanguage.allCases) { language in
+                                Text(language.displayName).tag(language)
                             }
                         }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .frame(width: 220)
+                        .cursor(.pointingHand)
                     }
                 }
             }
@@ -3629,8 +3367,6 @@ struct BasicSettingsView: View {
         }
         .background(Color.kimiPanelBackground)
         .onAppear {
-            editingKey = model.key
-            isEditingKey = model.key.isEmpty
             quotaIntervalText = intervalText(from: model.quotaRefreshInterval)
             updateIntervalText = intervalText(from: model.updateCheckInterval)
             launchAtLoginManager.refresh()
@@ -3660,60 +3396,28 @@ struct BasicSettingsView: View {
         updateIntervalText = intervalText(from: model.updateCheckInterval)
         model.restartTimers()
     }
-
-    private func saveKey() {
-        let trimmed = editingKey.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.hasPrefix("sk-kimi-") else {
-            model.errorMessage = LanguageManager.tr("API Key 格式错误，应以 sk-kimi- 开头")
-            return
-        }
-        editingKey = trimmed
-        model.key = trimmed
-        isEditingKey = false
-        commitIntervals()
-        model.refresh(showsLoading: false)
-    }
-
-    private func maskedKey(_ key: String) -> String {
-        guard key.count > 8 else { return key }
-        let prefix = String(key.prefix(7))
-        let suffix = String(key.suffix(5))
-        return "\(prefix)...\(suffix)"
-    }
 }
 
-// MARK: - 面板自定义
+// MARK: - 外观
 
+/// 设置窗口「外观样式」页：卡片显示开关、外观主题、菜单栏样式。
 struct PanelCustomSettingsView: View {
+    @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var model = KimiCodeBarModel.shared
     @StateObject private var languageManager = LanguageManager.shared
+
+    @State private var isHoveredRepoLink = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 6) {
-                    LText("面板自定义")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(.kimiTextPrimary)
+                LText("外观样式")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(.kimiTextPrimary)
 
-                    LText("勾选要在菜单栏面板中显示的内容，取消勾选可隐藏对应卡片。设置即时生效。")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.kimiTextSecondary)
-                }
-
-                SettingsCard {
+                // 卡片显示
+                SettingsCard(title: languageManager.tr("卡片显示")) {
                     VStack(alignment: .leading, spacing: 0) {
-                        SettingsCardRow(
-                            title: languageManager.tr("加油包余额卡片")
-                        ) {
-                            Toggle("", isOn: $model.showBoosterWalletCard)
-                                .labelsHidden()
-                                .toggleStyle(.switch)
-                                .cursor(.pointingHand)
-                        }
-
-                        SettingsCardDivider()
-
                         SettingsCardRow(
                             title: languageManager.tr("本机消耗量卡片")
                         ) {
@@ -3763,6 +3467,93 @@ struct PanelCustomSettingsView: View {
                         }
                     }
                 }
+
+                // 外观主题
+                SettingsCard(title: languageManager.tr("外观主题")) {
+                    HStack(spacing: 10) {
+                        ForEach(AppTheme.allCases) { theme in
+                            SettingsOptionCard(
+                                title: theme.displayName,
+                                subtitle: nil,
+                                iconName: theme.iconName,
+                                isSelected: themeManager.theme == theme
+                            ) {
+                                themeManager.theme = theme
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 13)
+                }
+
+                // 菜单栏样式
+                SettingsCard(title: languageManager.tr("菜单栏样式")) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        SettingsCardRow(title: languageManager.tr("显示样式")) {
+                            Picker("", selection: $model.menuBarDisplayScheme) {
+                                ForEach(MenuBarDisplayScheme.allCases) { scheme in
+                                    Text(scheme.displayName).tag(scheme)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .labelsHidden()
+                            .frame(width: 180)
+                        }
+
+                        SettingsCardDivider()
+                        SettingsCardRow(title: languageManager.tr("实时预览")) {
+                            if let quota = model.quota {
+                                Image(nsImage: MenuBarTextRenderer.image(
+                                    scheme: model.menuBarDisplayScheme,
+                                    weekly: quota.weekly.percentage,
+                                    fiveHour: quota.fiveHour.percentage
+                                ))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color.black)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                            } else {
+                                Text("-- · --")
+                                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+
+                // 建议反馈：外观建议欢迎到仓库提 Issue / PR
+                HStack(spacing: 8) {
+                    HStack(spacing: 4) {
+                        Text("✨")
+                            .font(.system(size: 12))
+
+                        LText("如果你有更好的建议，欢迎去仓库提交 Issue 或 PR。")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.kimiTextSecondary)
+                    }
+
+                    Spacer()
+
+                    Button(action: {
+                        NSWorkspace.shared.open(URL(string: "https://github.com/xifandev/KimiCodeBar")!)
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "link")
+                                .font(.system(size: 10, weight: .medium))
+                            LText("GitHub 仓库")
+                                .font(.system(size: 12, weight: .medium))
+                        }
+                        .foregroundStyle(isHoveredRepoLink ? .kimiTextPrimary : .kimiTextSecondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(isHoveredRepoLink ? Color.kimiTextPrimary.opacity(0.14) : Color.kimiTextPrimary.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                    .cursor(.pointingHand)
+                    .onHover { isHoveredRepoLink = $0 }
+                }
             }
             .padding(.horizontal, 24)
             .padding(.top, 44)
@@ -3776,9 +3567,6 @@ struct PanelCustomSettingsView: View {
 // MARK: - 关于
 
 struct AboutSettingsView: View {
-    @StateObject private var model = KimiCodeBarModel.shared
-    @StateObject private var languageManager = LanguageManager.shared
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -3789,60 +3577,8 @@ struct AboutSettingsView: View {
                 // GitHub 开源社区卡片
                 GitHubCommunityCard()
 
-                // 特性亮点
-                HStack(alignment: .top, spacing: 16) {
-                    FeatureHighlightCard(
-                        icon: "sparkles",
-                        iconColor: .kimiBlue,
-                        title: languageManager.tr("量身定制"),
-                        description: languageManager.tr("为 Kimi Code 量身设计的用量监控小工具，在菜单栏轻量化运行，限额一目了然。")
-                    )
-
-                    FeatureHighlightCard(
-                        icon: "lock.shield",
-                        iconColor: .green,
-                        title: languageManager.tr("隐私安全"),
-                        description: languageManager.tr("数据仅本地存储，所有 API 只与 Kimi 官方通信，代码全部开源可审计。")
-                    )
-                }
-
-                // 应用信息
-                SettingsCard {
-                    VStack(spacing: 16) {
-                        AnimatedKimiCodeLogo(width: 64, isAnimating: true)
-
-                        Text("KimiCodeBar")
-                            .font(.system(size: 22, weight: .bold))
-                            .foregroundStyle(.kimiTextPrimary)
-
-                        LText("版本 %@", appVersion())
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(.secondary)
-
-                        if model.kimiVersion != languageManager.tr("检测中…") && model.kimiVersion != languageManager.tr("未检测到") {
-                            Text("KimiCode CLI \(formatKimiVersion(model.kimiVersion))")
-                                .font(.system(size: 12))
-                                .foregroundStyle(.secondary)
-                        }
-
-                        HStack(spacing: 12) {
-                            LinkRow(
-                                title: "GitHub",
-                                imageName: "github-icon",
-                                imageSize: 16,
-                                url: URL(string: "https://github.com/xifandev/KimiCodeBar")!
-                            )
-                            LinkRow(
-                                title: languageManager.tr("反馈问题"),
-                                icon: "exclamationmark.bubble",
-                                url: URL(string: "https://github.com/xifandev/KimiCodeBar/issues")!
-                            )
-                        }
-                        .padding(.top, 8)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 24)
-                }
+                // 贡献者鸣谢：感谢每一位共建者，也欢迎更多人加入
+                ContributorsCard()
             }
             .padding(.horizontal, 24)
             .padding(.top, 44)
@@ -4186,6 +3922,198 @@ private struct SkillHorizontalItem: View {
     }
 }
 
+// MARK: - 贡献者
+
+/// GitHub 贡献者（公开 API，无需鉴权）
+struct GitHubContributor: Decodable, Identifiable {
+    let login: String
+    let avatarURL: URL?
+    let contributions: Int
+    let type: String?
+
+    var id: String { login }
+
+    enum CodingKeys: String, CodingKey {
+        case login
+        case contributions
+        case type
+        case avatarURL = "avatar_url"
+    }
+}
+
+/// 贡献者列表提供者：App 生命周期内只拉取一次；失败静默降级（隐藏列表、保留共建入口）。
+final class ContributorsProvider: ObservableObject {
+    static let shared = ContributorsProvider()
+
+    @Published private(set) var contributors: [GitHubContributor] = []
+    @Published private(set) var isLoading = false
+    @Published private(set) var loadFailed = false
+
+    private var didStartLoad = false
+
+    private init() {}
+
+    func loadIfNeeded() {
+        guard !didStartLoad else { return }
+        didStartLoad = true
+        isLoading = true
+
+        Task {
+            defer { isLoading = false }
+            do {
+                let url = URL(string: "https://api.github.com/repos/xifandev/KimiCodeBar/contributors")!
+                var request = URLRequest(url: url, timeoutInterval: 10)
+                request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+                let (data, _) = try await URLSession.shared.data(for: request)
+                let all = try JSONDecoder().decode([GitHubContributor].self, from: data)
+                // 只展示真实用户：过滤 Bot（如 github-actions[bot]）
+                contributors = all.filter { $0.type != "Bot" && !$0.login.contains("[bot]") }
+            } catch {
+                loadFailed = true
+            }
+        }
+    }
+}
+
+/// 「关于」页的贡献者鸣谢板块：头像 + 用户名 + 提交数，底部为共建入口。
+private struct ContributorsCard: View {
+    @StateObject private var provider = ContributorsProvider.shared
+    @StateObject private var languageManager = LanguageManager.shared
+
+    @State private var isHoveredContribute = false
+
+    var body: some View {
+        SettingsCard {
+            VStack(alignment: .leading, spacing: 0) {
+                // 标题 + 人数徽章
+                HStack(spacing: 6) {
+                    LText("贡献者")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.kimiTextPrimary)
+
+                    if !provider.contributors.isEmpty {
+                        Text("\(provider.contributors.count)")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.kimiTextSecondary)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.kimiTextPrimary.opacity(0.08))
+                            .clipShape(Capsule())
+                    }
+
+                    Spacer()
+
+                    if provider.isLoading {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+                .padding(.bottom, 10)
+
+                if provider.isLoading && provider.contributors.isEmpty {
+                    skeletonRows
+                } else if !provider.contributors.isEmpty {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(provider.contributors) { contributor in
+                            ContributorRow(contributor: contributor)
+                        }
+                    }
+                    .padding(.bottom, 6)
+                }
+
+                Divider()
+                    .background(Color.kimiTextPrimary.opacity(0.08))
+                    .padding(.leading, 16)
+
+                // 共建入口
+                HStack(spacing: 8) {
+                    LText("每一个 PR 都欢迎，期待在这里看到你的名字")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.kimiTextSecondary)
+
+                    Spacer()
+
+                    Button(action: {
+                        NSWorkspace.shared.open(URL(string: "https://github.com/xifandev/KimiCodeBar")!)
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "link")
+                                .font(.system(size: 10, weight: .medium))
+                            LText("参与共建")
+                                .font(.system(size: 12, weight: .medium))
+                        }
+                        .foregroundStyle(isHoveredContribute ? .kimiTextPrimary : .kimiTextSecondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(isHoveredContribute ? Color.kimiTextPrimary.opacity(0.14) : Color.kimiTextPrimary.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                    .cursor(.pointingHand)
+                    .onHover { isHoveredContribute = $0 }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+            }
+        }
+        .onAppear { provider.loadIfNeeded() }
+    }
+
+    /// 加载中的骨架行
+    private var skeletonRows: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ForEach(0..<3, id: \.self) { _ in
+                HStack(spacing: 10) {
+                    Circle()
+                        .fill(Color.kimiTextPrimary.opacity(0.08))
+                        .frame(width: 28, height: 28)
+
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.kimiTextPrimary.opacity(0.08))
+                        .frame(width: 120, height: 12)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 12)
+    }
+}
+
+/// 单个贡献者行：头像 + 用户名 + 提交数
+private struct ContributorRow: View {
+    let contributor: GitHubContributor
+
+    var body: some View {
+        HStack(spacing: 10) {
+            AsyncImage(url: contributor.avatarURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().aspectRatio(contentMode: .fill)
+                default:
+                    Circle().fill(Color.kimiTextPrimary.opacity(0.10))
+                }
+            }
+            .frame(width: 28, height: 28)
+            .clipShape(Circle())
+
+            Text(contributor.login)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.kimiTextPrimary)
+
+            Spacer()
+
+            Text(LanguageManager.tr("%1$d 次提交", arguments: [contributor.contributions]))
+                .font(.system(size: 11))
+                .foregroundStyle(.kimiTextTertiary)
+                .monospacedDigit()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 5)
+    }
+}
+
 // MARK: - GitHub 社区开源卡片
 
 struct GitHubCommunityCard: View {
@@ -4198,22 +4126,13 @@ struct GitHubCommunityCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top, spacing: 18) {
-                ZStack {
-                    Circle()
-                        .fill(Color.white.opacity(0.18))
-                        .frame(width: 54, height: 54)
-
-                    Image("github-icon")
-                        .renderingMode(.template)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 28, height: 28)
-                        .foregroundStyle(.white)
-                }
+                // 应用图标：蓝色渐变卡片上用白色描边版（蓝底实色 Logo 与卡片底色撞色）
+                AnimatedKimiCodeLogo(width: 54, isAnimating: false, style: .outline)
+                    .padding(.top, 2)
 
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 8) {
-                        LText("社区开源版")
+                        Text("KimiCodeBar")
                             .font(.system(size: 17, weight: .bold))
                             .foregroundStyle(.white)
 
@@ -4224,9 +4143,21 @@ struct GitHubCommunityCard: View {
                             .padding(.vertical, 3)
                             .background(Color.white.opacity(0.18))
                             .clipShape(RoundedRectangle(cornerRadius: 5))
+
+                        // 版本号跟在标题行（原底部应用信息卡片已合并至此）
+                        LText("版本 %@", appVersion())
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.65))
+                            .monospacedDigit()
                     }
 
-                    LText("KimiCodeBar 完全开源，代码公开透明。欢迎 Star、提交 Issue 或参与共建，让这款工具变得更好。")
+                    LText("完全开源，代码公开透明。")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.85))
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    LText("欢迎 Star、提交 Issue 或参与共建，让这款工具变得更好。")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.white.opacity(0.85))
                         .lineSpacing(3)
@@ -4306,47 +4237,6 @@ struct GitHubCommunityCard: View {
                 )
         )
         .shadow(color: Color.kimiBlue.opacity(0.22), radius: 18, x: 0, y: 8)
-    }
-}
-
-// MARK: - 特性亮点卡片
-
-struct FeatureHighlightCard: View {
-    let icon: String
-    let iconColor: Color
-    let title: String
-    let description: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(iconColor.opacity(0.12))
-                    .frame(width: 40, height: 40)
-
-                Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(iconColor)
-            }
-
-            VStack(alignment: .leading, spacing: 5) {
-                Text(title)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.kimiTextPrimary)
-
-                Text(description)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.kimiTextSecondary)
-                    .lineSpacing(3)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color.kimiCardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -4441,36 +4331,6 @@ extension View {
     }
 }
 
-// MARK: - 登录方式
-
-enum LoginMethod: String, CaseIterable, Identifiable {
-    case oauth
-    case token
-
-    var id: String { rawValue }
-
-    var displayName: String {
-        switch self {
-        case .oauth: return LanguageManager.tr("授权登录")
-        case .token: return LanguageManager.tr("Token 登录")
-        }
-    }
-
-    var subtitle: String {
-        switch self {
-        case .oauth: return LanguageManager.tr("浏览器一键授权")
-        case .token: return LanguageManager.tr("手动填写 API Key")
-        }
-    }
-
-    var iconName: String {
-        switch self {
-        case .oauth: return "person.badge.key"
-        case .token: return "key"
-        }
-    }
-}
-
 // MARK: - 本地服务状态
 
 enum KimiServerStatus: Equatable {
@@ -4499,10 +4359,6 @@ enum KimiServerOperation: Equatable {
 final class KimiCodeBarModel: ObservableObject {
     static let shared = KimiCodeBarModel()
 
-    @AppStorage("kimiApiKey") var key = ""
-    @AppStorage("loginMethod") var loginMethod: LoginMethod = .oauth {
-        didSet { refresh(showsLoading: false) }
-    }
     @AppStorage("quotaRefreshInterval") var quotaRefreshInterval: Double = 3
     @AppStorage("updateCheckInterval") var updateCheckInterval: Double = 10
     @AppStorage("menuBarDisplayScheme") var menuBarDisplayScheme: MenuBarDisplayScheme = .compact
@@ -4511,8 +4367,7 @@ final class KimiCodeBarModel: ObservableObject {
     @AppStorage("cachedKimiReleaseNotes") var cachedKimiReleaseNotes: String = ""
     @AppStorage("snoozedKimiUpdateUntil") var snoozedKimiUpdateUntil: Double = 0
 
-    // MARK: - 面板自定义（用户控制各卡片是否显示）
-    @AppStorage("showBoosterWalletCard") var showBoosterWalletCard: Bool = true
+    // MARK: - 卡片显示（用户控制各卡片是否显示）
     @AppStorage("showLocalUsageCard") var showLocalUsageCard: Bool = true
     @AppStorage("showKimiServerCard") var showKimiServerCard: Bool = true
     @AppStorage("showKimiVersionRow") var showKimiVersionRow: Bool = false
@@ -4527,7 +4382,7 @@ final class KimiCodeBarModel: ObservableObject {
     @Published var oauthLoginInProgress = false
     @Published var oauthLoginError: String?
 
-    // MARK: - 多账号（仅 loginMethod == .oauth 时生效）
+    // MARK: - 多账号
 
     /// 账号列表（镜像 KimiAccountStore 的内存状态）
     @Published var accounts: [KimiAccount] = []
@@ -4541,10 +4396,10 @@ final class KimiCodeBarModel: ObservableObject {
     /// CLI 轮换 token 后匹配失效，自动回退为 nil
     @Published var cliActiveAccountID: UUID?
 
-    /// 兼容属性：主账号的 token。现有 UI 只读它判断是否已授权。
+    /// 兼容属性：主账号的 OAuth token（API Key 主账号为 nil）。现有 UI 只读它判断是否已授权。
     var oauthToken: KimiOAuthToken? {
         guard let id = primaryAccountID else { return nil }
-        return accounts.first(where: { $0.id == id })?.token
+        return accounts.first(where: { $0.id == id })?.oauthToken
     }
 
     @Published var kimiVersion: String = LanguageManager.tr("检测中…")
@@ -4581,14 +4436,11 @@ final class KimiCodeBarModel: ObservableObject {
 
     /// 当前是否已配置可用凭证（决定菜单栏是否提示去设置）
     var hasCredential: Bool {
-        switch loginMethod {
-        case .token: return !key.isEmpty
-        case .oauth: return oauthToken != nil
-        }
+        !accounts.isEmpty
     }
 
     init() {
-        // 加载多账号凭证（旧单 token 格式由 store 自动迁移），并保证主账号有效
+        // 加载账号凭证并保证主账号有效（旧版凭证格式按无账号处理，需重新登录）
         let store = KimiAccountStore.shared
         store.ensurePrimaryAccount()
         let snapshot = store.snapshot
@@ -4626,82 +4478,27 @@ final class KimiCodeBarModel: ObservableObject {
 
     /// 拉取额度用量。
     /// - Parameter showsLoading: 是否把 isLoading 置 true 触发 UI loading 态。
-    ///   仅手动点「刷新」按钮时传 true；后台场景（启动、定时器、面板打开、切登录方式、
-    ///   设置窗口 onAppear、saveKey）一律传 false，避免界面无谓闪烁。
+    ///   仅手动点「刷新」按钮时传 true；后台场景（启动、定时器、面板打开、
+    ///   设置窗口 onAppear）一律传 false，避免界面无谓闪烁。
     func refresh(showsLoading: Bool = true) {
-        // OAuth 模式走多账号并行刷新；以下原逻辑仅服务 API Key 模式
-        guard loginMethod == .token else {
-            refreshCliActiveAccount()
-            refreshAllAccounts(showsLoading: showsLoading)
-            return
-        }
-        if showsLoading {
-            isLoading = true
-        }
-        errorMessage = nil
-        let startTime = Date()
-
-        Task {
-            guard let bearerToken = await resolveBearerToken() else {
-                await MainActor.run {
-                    if showsLoading {
-                        self.isLoading = false
-                    }
-                    self.quota = nil
-                    self.text = LanguageManager.tr("未登录")
-                }
-                return
-            }
-
-            let result = await service.fetchQuota(token: bearerToken)
-
-            let elapsed = Date().timeIntervalSince(startTime)
-            let remaining = max(0, 0.5 - elapsed)
-            if remaining > 0 {
-                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
-            }
-
-            await MainActor.run {
-                if showsLoading {
-                    self.isLoading = false
-                }
-                switch result {
-                case .success(let quota):
-                    self.quota = quota
-                    self.text = LanguageManager.tr("周 %1$d%% · 5h %2$d%%", arguments: [quota.weekly.percentage, quota.fiveHour.percentage])
-                    self.errorMessage = nil
-                case .failure(let error):
-                    if self.quota == nil {
-                        self.text = "--"
-                    }
-                    self.errorMessage = errorDescription(error)
-                }
-            }
-        }
+        refreshCliActiveAccount()
+        refreshAllAccounts(showsLoading: showsLoading)
     }
 
-    /// 解析 API Key 模式下的 Bearer 凭证。
-    /// OAuth 模式不再走这里，按账号维度走 resolveAccessToken(for:)。
-    private func resolveBearerToken() async -> String? {
-        key.isEmpty ? nil : key
-    }
-
-    /// 解析单个账号当前可用的 access token。
-    /// 语义与旧单账号逻辑一致（按账号维度）：
+    /// 解析单个 OAuth 账号当前可用的 access token。
     /// 过期前自动用 refresh_token 换新；刷新前再读一次磁盘，防御其他 Bar 实例刚刷新过；
     /// 授权被吊销（unauthorized）时返回 nil，由调用方把账号标记为「登录失效」——
     /// 凭证保留在列表中等待用户重新授权，不删除。
     private func resolveAccessToken(for accountID: UUID) async -> String? {
         let store = KimiAccountStore.shared
-        guard let account = store.account(id: accountID), account.token.isValid else { return nil }
-        let token = account.token
+        guard let token = store.account(id: accountID)?.oauthToken, token.isValid else { return nil }
 
         guard token.needsRefresh else {
             return token.accessToken
         }
 
         // 刷新前再读一次磁盘：防御其他 Bar 实例刚完成刷新并写入了新凭证
-        if let latest = store.freshAccount(id: accountID)?.token,
+        if let latest = store.freshAccount(id: accountID)?.oauthToken,
            latest.accessToken != token.accessToken,
            !latest.needsRefresh {
             return latest.accessToken
@@ -4710,11 +4507,11 @@ final class KimiCodeBarModel: ObservableObject {
         let result = await oauthService.refreshAccessToken(token)
         switch result {
         case .success(let newToken):
-            store.updateToken(id: accountID, token: newToken)
+            store.updateOAuthToken(id: accountID, token: newToken)
             return newToken.accessToken
         case .failure(.unauthorized):
             // 若磁盘上已是另一份凭证（其他实例刷新成功），直接沿用
-            if let latest = store.freshAccount(id: accountID)?.token,
+            if let latest = store.freshAccount(id: accountID)?.oauthToken,
                latest.accessToken != token.accessToken {
                 return latest.accessToken
             }
@@ -4737,7 +4534,7 @@ final class KimiCodeBarModel: ObservableObject {
         errorMessage = nil
 
         let store = KimiAccountStore.shared
-        // 同步磁盘最新状态（含旧格式迁移、其他 Bar 实例的写入）
+        // 同步磁盘最新状态（含其他 Bar 实例的写入）
         store.reload()
         store.ensurePrimaryAccount()
         let snapshot = store.snapshot
@@ -4769,14 +4566,30 @@ final class KimiCodeBarModel: ObservableObject {
             await withTaskGroup(of: (UUID, KimiQuota?, QuotaError?).self) { group in
                 for account in snapshot.accounts {
                     group.addTask {
-                        guard let accessToken = await self.resolveAccessToken(for: account.id) else {
-                            return (account.id, nil, nil)
-                        }
-                        switch await self.service.fetchQuota(token: accessToken) {
-                        case .success(let quota):
-                            return (account.id, quota, nil)
-                        case .failure(let error):
-                            return (account.id, nil, error)
+                        // 按凭证类型分派：OAuth 走 token 刷新链路，API Key 直接当 Bearer token 用。
+                        // 扩展新平台（如 DeepSeek）时在此按 account.provider 分派对应平台的配额服务。
+                        switch account.credential {
+                        case .oauth:
+                            guard let accessToken = await self.resolveAccessToken(for: account.id) else {
+                                return (account.id, nil, nil)
+                            }
+                            switch await self.service.fetchQuota(token: accessToken) {
+                            case .success(let quota):
+                                return (account.id, quota, nil)
+                            case .failure(let error):
+                                return (account.id, nil, error)
+                            }
+                        case .apiKey(let key):
+                            switch await self.service.fetchQuota(token: key) {
+                            case .success(let quota):
+                                return (account.id, quota, nil)
+                            case .failure(let error):
+                                // Key 无效（401/403）按「登录失效」处理，引导用户修改 Key
+                                if case .httpError(let statusCode, _) = error, statusCode == 401 || statusCode == 403 {
+                                    return (account.id, nil, nil)
+                                }
+                                return (account.id, nil, error)
+                            }
                         }
                     }
                 }
@@ -4814,7 +4627,6 @@ final class KimiCodeBarModel: ObservableObject {
     /// 把主账号数据同步到兼容属性（quota / text / errorMessage），
     /// 让现有只读这些属性的 UI 在多账号下无需修改即可工作。
     private func syncPrimaryCompat() {
-        guard loginMethod == .oauth else { return }
         guard let primaryID = primaryAccountID,
               accounts.contains(where: { $0.id == primaryID }) else {
             quota = nil
@@ -4912,7 +4724,13 @@ final class KimiCodeBarModel: ObservableObject {
             return
         }
 
-        store.addAccount(KimiAccount(id: UUID(), alias: nil, token: token, accountIdentifier: identifier))
+        store.addAccount(KimiAccount(
+            id: UUID(),
+            alias: nil,
+            provider: .kimi,
+            credential: .oauth(token),
+            accountIdentifier: identifier
+        ))
         store.ensurePrimaryAccount()
         let snapshot = store.snapshot
         accounts = snapshot.accounts
@@ -4925,16 +4743,6 @@ final class KimiCodeBarModel: ObservableObject {
         oauthLoginTask = nil
         oauthDeviceAuth = nil
         oauthLoginInProgress = false
-    }
-
-    /// 兼容旧「退出登录」语义：多账号下删除当前主账号。
-    /// 主账号被删除后顺延为列表中的下一个账号；无剩余账号时回到未登录态。
-    func logoutOAuth() {
-        cancelOAuthLogin()
-        oauthLoginError = nil
-        if let primaryID = primaryAccountID {
-            removeAccount(primaryID)
-        }
     }
 
     // MARK: - 账号管理
@@ -4985,13 +4793,75 @@ final class KimiCodeBarModel: ObservableObject {
                 identifier = quota.userIdentifier
             }
             let store = KimiAccountStore.shared
-            store.updateToken(id: id, token: token)
+            store.updateOAuthToken(id: id, token: token)
             if let identifier {
                 store.updateAccountIdentifier(id: id, identifier: identifier)
             }
             self.accounts = store.snapshot.accounts
             self.accountStates[id] = .idle
             self.refresh(showsLoading: false)
+        }
+    }
+
+    // MARK: - API Key 账号
+
+    /// 添加 API Key 账号：先拉一次 usages 验证 Key 并提取账号标识去重，成功则落库。
+    /// 返回 nil 表示成功；否则返回面向用户的错误文案。
+    @discardableResult
+    func addApiKeyAccount(key: String, alias: String?) async -> String? {
+        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return LanguageManager.tr("请输入 API Key")
+        }
+
+        switch await service.fetchQuota(token: trimmed) {
+        case .success(let quota):
+            let store = KimiAccountStore.shared
+            if let identifier = quota.userIdentifier,
+               store.snapshot.accounts.contains(where: { $0.accountIdentifier == identifier }) {
+                return LanguageManager.tr("该账号已添加，无需重复添加")
+            }
+            let cleanAlias = alias?.trimmingCharacters(in: .whitespacesAndNewlines)
+            store.addAccount(KimiAccount(
+                id: UUID(),
+                alias: (cleanAlias?.isEmpty == false) ? cleanAlias : nil,
+                provider: .kimi,
+                credential: .apiKey(trimmed),
+                accountIdentifier: quota.userIdentifier
+            ))
+            store.ensurePrimaryAccount()
+            let snapshot = store.snapshot
+            accounts = snapshot.accounts
+            primaryAccountID = snapshot.primaryAccountID
+            refresh(showsLoading: false)
+            return nil
+        case .failure(let error):
+            return errorDescription(error)
+        }
+    }
+
+    /// 修改 API Key 账号的密钥（「登录失效」后的恢复入口）：验证通过才落盘。
+    /// 返回 nil 表示成功；否则返回面向用户的错误文案。
+    @discardableResult
+    func updateApiKey(for id: UUID, key: String) async -> String? {
+        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return LanguageManager.tr("请输入 API Key")
+        }
+
+        switch await service.fetchQuota(token: trimmed) {
+        case .success(let quota):
+            let store = KimiAccountStore.shared
+            store.updateApiKey(id: id, key: trimmed)
+            if let identifier = quota.userIdentifier {
+                store.updateAccountIdentifier(id: id, identifier: identifier)
+            }
+            accounts = store.snapshot.accounts
+            accountStates[id] = .idle
+            refresh(showsLoading: false)
+            return nil
+        case .failure(let error):
+            return errorDescription(error)
         }
     }
 
@@ -5006,9 +4876,11 @@ final class KimiCodeBarModel: ObservableObject {
 
     /// 切换 CLI 活跃账号：把指定账号的 token 原子写入 CLI 凭证文件。
     /// 仅做这一次性写入，此后 Bar 与 CLI 凭证各自独立、不再同步（见 CONTEXT.md「凭证隔离原则」）。
+    /// 仅支持 OAuth 账号：CLI 凭证格式是 access/refresh token 对，API Key 账号无法写入。
     func switchCliAccount(to id: UUID) throws {
-        guard let account = accounts.first(where: { $0.id == id }) else { return }
-        try CliCredentialsService.writeToken(account.token)
+        guard let account = accounts.first(where: { $0.id == id }),
+              let token = account.oauthToken else { return }
+        try CliCredentialsService.writeToken(token)
         refreshCliActiveAccount()
     }
 

@@ -27,12 +27,36 @@
         }
       }
     },
+    "%" : {
+
+    },
     "%@ · %@%@" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ · %2$@%3$@"
+          }
+        }
+      }
+    },
+    "%@ / %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ / %2$@"
+          }
+        }
+      }
+    },
+    "%1$d 次提交" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$d commits"
           }
         }
       }
@@ -74,6 +98,9 @@
 
     },
     "%lld%%" : {
+
+    },
+    "✨" : {
 
     },
     "5H" : {
@@ -126,6 +153,39 @@
         }
       }
     },
+    "API Key 登录" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in with API Key"
+          }
+        }
+      }
+    },
+    "CLI 使用中" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CLI Active"
+          }
+        }
+      }
+    },
+    "CLI 当前登录的账号未保存到 Bar，切换后其凭证将被覆盖，需要重新登录才能恢复。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The account currently logged in to the CLI is not saved in Bar. Switching will overwrite its credentials, and it will need to log in again to recover."
+          }
+        }
+      }
+    },
     "GitHub Release 接口请求失败：%@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -155,6 +215,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Failed to parse the GitHub Release API response: %@"
+          }
+        }
+      }
+    },
+    "GitHub 仓库" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub Repo"
           }
         }
       }
@@ -273,9 +344,6 @@
     "KimiCode CLI" : {
 
     },
-    "KimiCode CLI %@" : {
-
-    },
     "KimiCode CLI 版本号" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -312,17 +380,6 @@
         }
       }
     },
-    "KimiCodeBar 完全开源，代码公开透明。欢迎 Star、提交 Issue 或参与共建，让这款工具变得更好。" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "KimiCodeBar is fully open source with transparent code. Stars, issues, and contributions are welcome—help make it better."
-          }
-        }
-      }
-    },
     "KimiCodeBar 版本行" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -335,9 +392,6 @@
       }
     },
     "Open Source" : {
-
-    },
-    "sk-kimi-..." : {
 
     },
     "Token 登录" : {
@@ -464,6 +518,17 @@
         }
       }
     },
+    "仍然切换" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch Anyway"
+          }
+        }
+      }
+    },
     "会话列表" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -493,6 +558,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit"
+          }
+        }
+      }
+    },
+    "修改 API Key" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update API Key"
+          }
+        }
+      }
+    },
+    "修改 Key" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Key"
+          }
+        }
+      }
+    },
+    "修改失败" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Failed"
           }
         }
       }
@@ -563,6 +661,39 @@
         }
       }
     },
+    "切换 CLI 账号" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch CLI Account"
+          }
+        }
+      }
+    },
+    "切换失败" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch Failed"
+          }
+        }
+      }
+    },
+    "切换账号" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch Account"
+          }
+        }
+      }
+    },
     "删除" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -596,6 +727,17 @@
         }
       }
     },
+    "别名（可选）" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alias (optional)"
+          }
+        }
+      }
+    },
     "刷新" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -614,6 +756,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create and copy an API Key in the Kimi console."
+          }
+        }
+      }
+    },
+    "加油包" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Booster"
           }
         }
       }
@@ -673,6 +826,17 @@
         }
       }
     },
+    "卡片显示" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Card Visibility"
+          }
+        }
+      }
+    },
     "即将重置" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -717,13 +881,13 @@
         }
       }
     },
-    "反馈问题" : {
+    "参与共建" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Report an Issue"
+            "value" : "Contribute"
           }
         }
       }
@@ -838,6 +1002,17 @@
         }
       }
     },
+    "在菜单栏面板中显示该账号的加油包余额" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show this account's booster balance in the menu bar panel"
+          }
+        }
+      }
+    },
     "基本设置" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -893,6 +1068,17 @@
         }
       }
     },
+    "外观样式" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appearance"
+          }
+        }
+      }
+    },
     "外观主题" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -915,6 +1101,28 @@
         }
       }
     },
+    "好" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "如果你有更好的建议，欢迎去仓库提交 Issue 或 PR。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Got a better idea? Issues and PRs are welcome in the repo."
+          }
+        }
+      }
+    },
     "安装更新" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -922,6 +1130,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Install Update"
+          }
+        }
+      }
+    },
+    "完全开源，代码公开透明。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fully open source, with transparent code."
+          }
+        }
+      }
+    },
+    "欢迎 Star、提交 Issue 或参与共建，让这款工具变得更好。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stars, issues, and contributions are welcome—help make it better."
           }
         }
       }
@@ -944,6 +1174,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Live Preview"
+          }
+        }
+      }
+    },
+    "将把「%1$@」的凭证写入 Kimi CLI，之后新启动的 CLI 会话将使用该账号。\n\n%2$@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will write the credentials of “%1$@” to Kimi CLI. New CLI sessions will use this account.\n\n%2$@"
+          }
+        }
+      }
+    },
+    "将该账号的凭证写入 Kimi CLI，更换 CLI 的登录账号" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write this account’s credentials to Kimi CLI, changing the account the CLI logs in with."
           }
         }
       }
@@ -1223,6 +1475,17 @@
         }
       }
     },
+    "授权登录或 API Key 登录" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in with browser or API Key"
+          }
+        }
+      }
+    },
     "授权码" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1340,6 +1603,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A new version of KimiCode is available"
+          }
+        }
+      }
+    },
+    "无法写入 CLI 凭证文件：%@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to write the CLI credentials file: %@"
           }
         }
       }
@@ -1751,6 +2025,17 @@
         }
       }
     },
+    "检测到正在运行的 Kimi Code 会话：切换对它们不生效，且它们刷新登录状态时可能覆盖本次切换，建议先退出。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running Kimi Code sessions detected: the switch does not affect them, and they may overwrite this switch when refreshing their login. Quit them first if possible."
+          }
+        }
+      }
+    },
     "正在加载内容…" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1784,6 +2069,17 @@
         }
       }
     },
+    "每一个 PR 都欢迎，期待在这里看到你的名字" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every PR is welcome. We hope to see your name here."
+          }
+        }
+      }
+    },
     "没有符合条件的会话" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1802,6 +2098,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "One-click authorization in your browser"
+          }
+        }
+      }
+    },
+    "浏览器授权，推荐" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Browser authorization (recommended)"
           }
         }
       }
@@ -1916,6 +2223,17 @@
         }
       }
     },
+    "登录失效，请到设置-账号管理处理" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session expired. Go to Settings > Account Management to fix it."
+          }
+        }
+      }
+    },
     "登录方式" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1945,17 +2263,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Are you sure you want to delete “%1$@”? This only removes the authorization saved in the Bar and does not affect Kimi CLI sign-in."
-          }
-        }
-      }
-    },
-    "社区开源版" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Community Edition"
           }
         }
       }
@@ -2011,6 +2318,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restart Now"
+          }
+        }
+      }
+    },
+    "等待授权…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for authorization…"
           }
         }
       }
@@ -2087,7 +2405,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Auto Archive"
+            "value" : "Archive"
           }
         }
       }
@@ -2147,6 +2465,17 @@
         }
       }
     },
+    "该账号已添加，无需重复添加" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This account has already been added."
+          }
+        }
+      }
+    },
     "语言" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2169,6 +2498,28 @@
         }
       }
     },
+    "请输入 API Key" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please enter your API Key"
+          }
+        }
+      }
+    },
+    "贡献者" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contributors"
+          }
+        }
+      }
+    },
     "账号 %1$d" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2187,6 +2538,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Account List"
+          }
+        }
+      }
+    },
+    "账号用于在 Bar 中查看配额；「切换账号」会把该账号的凭证写入 Kimi CLI，更换 CLI 的登录账号。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accounts are used to view quotas in Bar. “Switch Account” writes the account's credentials to Kimi CLI, changing the account the CLI logs in with."
+          }
+        }
+      }
+    },
+    "账号管理" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account"
           }
         }
       }
@@ -2220,6 +2593,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "System"
+          }
+        }
+      }
+    },
+    "输入新的 API Key，验证通过后立即生效。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a new API Key. It takes effect once verified."
           }
         }
       }
@@ -2308,6 +2692,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select a skill above to preview its content"
+          }
+        }
+      }
+    },
+    "选择添加方式" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose How to Add"
           }
         }
       }
@@ -2422,6 +2817,17 @@
         }
       }
     },
+    "验证中…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifying…"
+          }
+        }
+      }
+    },
     "高级版" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2440,138 +2846,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Default"
-          }
-        }
-      }
-    },
-    "账号用于在 Bar 中查看配额；「切换账号」会把该账号的凭证写入 Kimi CLI，更换 CLI 的登录账号。" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Accounts are used to view quotas in Bar. \u201cSwitch Account\u201d writes the account's credentials to Kimi CLI, changing the account the CLI logs in with."
-          }
-        }
-      }
-    },
-    "CLI 使用中" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CLI Active"
-          }
-        }
-      }
-    },
-    "切换账号" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Switch Account"
-          }
-        }
-      }
-    },
-    "切换 CLI 账号" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Switch CLI Account"
-          }
-        }
-      }
-    },
-    "仍然切换" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Switch Anyway"
-          }
-        }
-      }
-    },
-    "切换失败" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Switch Failed"
-          }
-        }
-      }
-    },
-    "好" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        }
-      }
-    },
-    "将把「%1$@」的凭证写入 Kimi CLI，之后新启动的 CLI 会话将使用该账号。\n\n%2$@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This will write the credentials of \u201c%1$@\u201d to Kimi CLI. New CLI sessions will use this account.\n\n%2$@"
-          }
-        }
-      }
-    },
-    "CLI 当前登录的账号未保存到 Bar，切换后其凭证将被覆盖，需要重新登录才能恢复。" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The account currently logged in to the CLI is not saved in Bar. Switching will overwrite its credentials, and it will need to log in again to recover."
-          }
-        }
-      }
-    },
-    "检测到正在运行的 Kimi Code 会话：切换对它们不生效，且它们刷新登录状态时可能覆盖本次切换，建议先退出。" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Running Kimi Code sessions detected: the switch does not affect them, and they may overwrite this switch when refreshing their login. Quit them first if possible."
-          }
-        }
-      }
-    },
-    "无法写入 CLI 凭证文件：%@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to write the CLI credentials file: %@"
-          }
-        }
-      }
-    },
-    "将该账号的凭证写入 Kimi CLI，更换 CLI 的登录账号" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Write this account\u2019s credentials to Kimi CLI, changing the account the CLI logs in with."
           }
         }
       }

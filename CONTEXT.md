@@ -4,7 +4,15 @@
 
 ### Kimi 账号（KimiAccount）
 
-一个 Kimi 账号 = 一对 OAuth token（access_token + refresh_token）+ 用户别名 + 可选的账号唯一标识。Bar 在「设置 → 账号」中管理多个 Kimi 账号。
+一个 Kimi 账号 = 一份凭证（`AccountCredential`：OAuth token 对，或 API Key）+ 用户别名 + 可选的账号唯一标识 + 提供方（`AccountProvider`，目前只有 `kimi`）。Bar 在「设置 → 账号管理」中统一管理全部账号，添加时由用户选择授权登录（浏览器 OAuth）或 API Key 登录。
+
+凭证文件（`~/Library/Application Support/KimiCodeBar/credentials.json`）只认新格式（provider + credential 结构）；旧版单 token 格式按无账号处理，不做迁移，用户升级后重新登录即可。
+
+**扩展路径**：未来接入其它提供方（如 DeepSeek 余额监测）时，给 `AccountProvider` 加 case，在 `refreshAllAccounts` 的刷新任务组里按 provider 分派对应的查询服务，设置页与面板卡片按 provider 渲染即可。注意「切换账号」（写 CLI 凭证）仅对 OAuth 凭证的 Kimi 账号有意义。
+
+### 加油包余额（自动显示）
+
+加油包按账号归属，面板中是否展示完全由接口返回的开通状态自动决定：`BoosterWallet.isEnabled`（官方后台已开通加油包）为真时，对应账号才显示加油包余额（单账号出独立卡片，多账号在账号卡片内出一行）；未开通则不占位，无任何手动开关。
 
 ### 主账号（Primary Account）
 
@@ -16,7 +24,7 @@ Kimi Code CLI 实际使用的账号，即 `~/.kimi-code/credentials/kimi-code.js
 
 ### 切换账号（Switch Account）
 
-**专指更换 CLI 活跃账号**：把 Bar 账号列表中某个已登录账号的 token 复制写入 CLI 凭证文件，让之后启动的 kimi CLI 以该账号运行。不改变 Bar 的主账号。
+**专指更换 CLI 活跃账号**：把 Bar 账号列表中某个已登录账号的 OAuth token 复制写入 CLI 凭证文件，让之后启动的 kimi CLI 以该账号运行。不改变 Bar 的主账号。仅 OAuth 账号可切换——CLI 凭证格式是 access/refresh token 对，API Key 账号没有「切换账号」入口。
 
 ### CLI 使用中
 

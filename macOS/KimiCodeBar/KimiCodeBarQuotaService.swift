@@ -42,18 +42,21 @@ struct KimiQuota: Equatable {
     let userIdentifier: String?
 
     /// 会员等级显示名：API 返回 LEVEL_* 枚举，映射为 Kimi 官方会员名称（音乐速度术语，不做本地化）。
-    /// 未知等级回退为去掉 LEVEL_ 前缀的原始值，避免官方新增等级时显示错误名称。
+    /// 未知等级回退为去 LEVEL_ 前缀后的优雅格式（PRO_MAX → Pro Max），避免官方新增等级时显示错误名称。
     static func membershipDisplayName(_ level: String) -> String {
         switch level.uppercased() {
         case "LEVEL_FREE": return "Free"
+        case "LEVEL_TRIAL", "TRIAL": return "Trial"
         case "LEVEL_BASIC": return "Adagio"
         case "LEVEL_STANDARD": return "Moderato"
         case "LEVEL_INTERMEDIATE": return "Allegretto"
         case "LEVEL_ADVANCED": return "Allegro"
         case "LEVEL_PREMIUM": return "Vivace"
         default:
-            let trimmed = level.uppercased().replacingOccurrences(of: "LEVEL_", with: "")
-            return trimmed.isEmpty ? LanguageManager.tr("未知") : trimmed
+            // 未知等级：去 LEVEL_ 前缀，逐词首字母大写（如 PRO_MAX → Pro Max），不做全大写展示
+            let trimmed = level.replacingOccurrences(of: "LEVEL_", with: "", options: .caseInsensitive)
+            let pretty = trimmed.replacingOccurrences(of: "_", with: " ").lowercased().capitalized
+            return pretty.isEmpty ? LanguageManager.tr("未知") : pretty
         }
     }
 }
