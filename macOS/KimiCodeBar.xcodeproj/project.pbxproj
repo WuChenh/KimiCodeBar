@@ -42,6 +42,8 @@
 		EA0ACF1E9B564B769FE86518 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		c68dac1893a64de08b00b18830c9deba /* KimiWebLaunchAgentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiWebLaunchAgentManager.swift; sourceTree = "<group>"; };
 		7B1CA15E00000000000000000000A2 /* KimiLocalUsage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiLocalUsage.swift; sourceTree = "<group>"; };
+		7A11B22C33D44E55F6610002 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		7A11B22C33D44E55F6610003 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,8 +70,18 @@
 			isa = PBXGroup;
 			children = (
 				C7D94F1C4BCD423B99040DED /* KimiCodeBar */,
+				7A11B22C33D44E55F6610001 /* Configurations */,
 				6456A76DE5E141ED86925025 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		7A11B22C33D44E55F6610001 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				7A11B22C33D44E55F6610002 /* Debug.xcconfig */,
+				7A11B22C33D44E55F6610003 /* Release.xcconfig */,
+			);
+			path = Configurations;
 			sourceTree = "<group>";
 		};
 		C7D94F1C4BCD423B99040DED /* KimiCodeBar */ = {
@@ -190,7 +202,6 @@
 		9597893A2DD1474881E9922A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = KimiCodeBar/KimiCodeBar.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -210,17 +221,15 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.4.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kimicodebar.app;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
+			baseConfigurationReference = 7A11B22C33D44E55F6610003 /* Release.xcconfig */;
 			name = Release;
 		};
 		A3AD12A0E261486EA1E61006 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = KimiCodeBar/KimiCodeBar.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -240,11 +249,10 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.4.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kimicodebar.app;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
+			baseConfigurationReference = 7A11B22C33D44E55F6610002 /* Debug.xcconfig */;
 			name = Debug;
 		};
 		DAEEA2C5D03D45FC8C820719 /* Release */ = {

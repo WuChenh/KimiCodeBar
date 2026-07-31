@@ -1,0 +1,4 @@
+// Release 正式版配置（GitHub Actions 发版使用）
+PRODUCT_NAME = KimiCodeBar
+PRODUCT_BUNDLE_IDENTIFIER = com.kimicodebar.app
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
