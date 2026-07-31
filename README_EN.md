@@ -57,3 +57,9 @@ All data is stored locally. APIs only communicate with official Kimi servers. Th
 #
 
 ### Feedback 👉 <a href="https://github.com/xifandev/KimiCodeBar/issues">Issues</a>
+
+#
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE). You are free to use, copy, modify, and distribute this project, provided that the original copyright notice and license text are retained.

@@ -59,3 +59,9 @@
 #
 
 ### 欢迎提交 👉 <a href="https://github.com/xifandev/KimiCodeBar/issues">Issues</a> 反馈问题或建议
+
+#
+
+## 📄 开源协议
+
+本项目采用 [MIT License](LICENSE) 开源。你可以自由使用、复制、修改和分发本项目，但需要保留原始版权声明和许可证文本。
