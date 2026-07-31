@@ -64,4 +64,4 @@
 
 ## 📄 开源协议
 
-本项目采用 [MIT License](LICENSE) 开源。你可以自由使用、复制、修改和分发本项目，但需要保留原始版权声明（Copyright © 2026 [@xifandev](https://github.com/xifandev)）和许可证文本。
+本项目采用 [MIT License](LICENSE) 开源。你可以自由使用、复制、修改和分发本项目，但需要保留原始版权声明 [@xifandev](https://github.com/xifandev) 和许可证文本。
