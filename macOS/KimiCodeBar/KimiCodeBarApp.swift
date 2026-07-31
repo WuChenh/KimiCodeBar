@@ -1350,38 +1350,35 @@ struct BoosterWalletCard: View {
 
 // MARK: - 账号配额区（OAuth 多账号）
 
-/// OAuth 多账号模式下的账号配额区：每个账号一行紧凑摘要，
-/// 点击行展开/收起该账号的完整卡片组（本周/5小时用量 + 加油包）。
+/// OAuth 账号配额区：单账号直接展示完整用量卡片组（本周/5小时用量 + 加油包）；
+/// 多账号时每个账号一张完整卡片纵向罗列，无展开/收起交互。
 struct AccountQuotaListView: View {
     @StateObject private var model = KimiCodeBarModel.shared
 
     var body: some View {
         VStack(spacing: 8) {
-            ForEach(model.accounts) { account in
-                AccountQuotaRow(
-                    account: account,
-                    isPrimary: account.id == model.primaryAccountID
-                )
+            if model.accounts.count <= 1, let account = model.accounts.first {
+                SingleAccountQuotaCards(account: account)
+            } else {
+                ForEach(model.accounts) { account in
+                    AccountQuotaCard(
+                        account: account,
+                        isPrimary: account.id == model.primaryAccountID
+                    )
+                }
             }
         }
     }
 }
 
-/// 单个账号的紧凑行 + 展开后的卡片组。展开状态本地管理：主账号默认展开，其余默认收起。
-struct AccountQuotaRow: View {
+// MARK: - 单账号完整卡片组
+
+/// 单账号：直接展示本周/5小时用量大卡片 + 加油包卡片。
+private struct SingleAccountQuotaCards: View {
     let account: KimiAccount
-    let isPrimary: Bool
 
     @StateObject private var model = KimiCodeBarModel.shared
     @StateObject private var languageManager = LanguageManager.shared
-    @State private var isExpanded: Bool
-    @State private var isHovered = false
-
-    init(account: KimiAccount, isPrimary: Bool) {
-        self.account = account
-        self.isPrimary = isPrimary
-        _isExpanded = State(initialValue: isPrimary)
-    }
 
     /// 该账号最近一次拉取成功的配额（失败时保留旧值）
     private var quota: KimiQuota? {
@@ -1399,109 +1396,8 @@ struct AccountQuotaRow: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
-            rowButton
-
-            if isExpanded {
-                expandedContent
-            }
-        }
-    }
-
-    // MARK: 紧凑行
-
-    private var rowButton: some View {
-        HStack(spacing: 8) {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Text(model.displayName(for: account))
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.kimiTextPrimary)
-
-                    if isPrimary {
-                        LText("主账号")
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundStyle(Color.kimiBlue)
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 1)
-                            .background(Color.kimiBlue.opacity(0.12))
-                            .clipShape(RoundedRectangle(cornerRadius: 4))
-                    }
-
-                    if case .unauthorized = state {
-                        LText("登录失效")
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundStyle(.red)
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 1)
-                            .background(Color.red.opacity(0.12))
-                            .clipShape(RoundedRectangle(cornerRadius: 4))
-                    }
-                }
-
-                // 摘要行：失败时显示灰色错误提示，否则展示最近一次成功的配额
-                if case .failed(let message) = state {
-                    Text(message)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.kimiTextTertiary)
-                        .lineLimit(1)
-                } else if let quota {
-                    LText("周 %1$d%% · 5h %2$d%%", quota.weekly.percentage, quota.fiveHour.percentage)
-                        .font(.system(size: 11, weight: .medium, design: .monospaced))
-                        .foregroundStyle(isHovered ? .kimiTextPrimary : .kimiTextSecondary)
-                } else {
-                    Text("--")
-                        .font(.system(size: 11, weight: .medium, design: .monospaced))
-                        .foregroundStyle(isHovered ? .kimiTextPrimary : .kimiTextSecondary)
-                }
-            }
-
-            Spacer(minLength: 8)
-
-            if case .loading = state {
-                LoadingRing()
-                    .frame(width: 12, height: 12)
-            }
-
-            Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.kimiTextTertiary)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(Color.white.opacity(isHovered ? 0.14 : 0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .contentShape(Rectangle())
-        .onHover { isHovered = $0 }
-        .cursor(.pointingHand)
-        .onTapGesture {
-            // 不用动画：MenuBarExtra 面板窗口高度跟随内容变化，SwiftUI 布局动画
-            // 与 macOS 窗口 frame 动画节奏不一致会产生抖动，瞬时切换反而更稳。
-            isExpanded.toggle()
-        }
-    }
-
-    // MARK: 展开卡片组
-
-    @ViewBuilder
-    private var expandedContent: some View {
         if case .unauthorized = state {
-            // 登录失效：凭证保留，引导到设置-多账号重新授权（管理操作在设置页完成）
-            HStack(spacing: 8) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.red)
-
-                LText("登录失效，请到设置-多账号重新授权")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.kimiTextSecondary)
-
-                Spacer()
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(Color.red.opacity(0.10))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            AccountUnauthorizedHint()
         } else {
             VStack(spacing: 8) {
                 HStack(spacing: 12) {
@@ -1532,6 +1428,207 @@ struct AccountQuotaRow: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - 多账号配额卡片
+
+/// 多账号：每个账号一张完整卡片。头部为账号名与标签，下方纵向列出周/5小时限额行。
+private struct AccountQuotaCard: View {
+    let account: KimiAccount
+    let isPrimary: Bool
+
+    @StateObject private var model = KimiCodeBarModel.shared
+    @StateObject private var languageManager = LanguageManager.shared
+
+    /// 该账号最近一次拉取成功的配额（失败时保留旧值）
+    private var quota: KimiQuota? {
+        model.accountQuotas[account.id]
+    }
+
+    /// 该账号当前加载状态
+    private var state: KimiAccountState {
+        model.accountStates[account.id] ?? .idle
+    }
+
+    private var isLoadingState: Bool {
+        if case .loading = state { return true }
+        return false
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // 头部：账号名 + 标签行（主账号 / 会员等级 / 登录失效）
+            HStack(spacing: 6) {
+                Text(model.displayName(for: account))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.kimiTextPrimary)
+                    .lineLimit(1)
+
+                if isPrimary {
+                    tagPill(languageManager.tr("主账号"), color: .kimiBlue)
+                }
+
+                if let level = quota?.membershipLevel, !level.isEmpty {
+                    tagPill(KimiQuota.membershipDisplayName(level), color: .purple)
+                }
+
+                if case .unauthorized = state {
+                    tagPill(languageManager.tr("登录失效"), color: .red)
+                }
+
+                Spacer(minLength: 8)
+
+                if isLoadingState {
+                    LoadingRing()
+                        .frame(width: 12, height: 12)
+                }
+            }
+
+            if case .unauthorized = state {
+                // 凭证保留，引导到设置-多账号重新授权（管理操作在设置页完成）
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.red)
+
+                    LText("登录失效，请到设置-多账号重新授权")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.kimiTextSecondary)
+                }
+            } else {
+                // 拉取失败时保留旧数据展示，并在头部下方给出灰色错误提示
+                if case .failed(let message) = state {
+                    Text(message)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.kimiTextTertiary)
+                        .lineLimit(1)
+                }
+
+                AccountQuotaLine(
+                    title: languageManager.tr("本周用量"),
+                    reset: quota?.weekly.timeUntilReset,
+                    percentage: quota?.weekly.percentage,
+                    color: .kimiBlue,
+                    isLoading: isLoadingState
+                )
+
+                AccountQuotaLine(
+                    title: languageManager.tr("5小时用量"),
+                    reset: quota?.fiveHour.timeUntilReset,
+                    percentage: quota?.fiveHour.percentage,
+                    color: .orange,
+                    isLoading: isLoadingState
+                )
+            }
+        }
+        .padding(14)
+        .background(Color.kimiCardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    /// 卡片头部的小号标签：与设置页 StatusTag 同一比例（9pt / 0.12 底色 / 圆角 4）
+    private func tagPill(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(.system(size: 9, weight: .medium))
+            .foregroundStyle(color)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 1)
+            .background(color.opacity(0.12))
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
+}
+
+// MARK: - 限额行
+
+/// 单条限额行：标题 + 重置时间 + 大百分比，下方通栏胶囊进度条。
+/// 进度条用同色系横向渐变，视觉对齐 UsageCard 的胶囊轨道与投影。
+private struct AccountQuotaLine: View {
+    let title: String
+    let reset: String?
+    let percentage: Int?
+    let color: Color
+    let isLoading: Bool
+
+    private var clampedPercentage: Int {
+        min(percentage ?? 0, 100)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(title)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.kimiTextPrimary)
+
+                Spacer()
+
+                if isLoading {
+                    LoadingRing()
+                        .frame(width: 12, height: 12)
+                } else {
+                    if let reset {
+                        Text(reset)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.kimiTextTertiary)
+                    }
+
+                    if percentage != nil {
+                        Text("\(clampedPercentage)%")
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(.kimiTextPrimary)
+                    } else {
+                        Text("--")
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .foregroundStyle(.kimiTextTertiary)
+                    }
+                }
+            }
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .frame(height: 4)
+                        .foregroundStyle(Color.kimiTextPrimary.opacity(0.10))
+
+                    Capsule()
+                        .frame(width: proxy.size.width * CGFloat(clampedPercentage) / 100, height: 4)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [color, color.opacity(0.55)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .shadow(color: color.opacity(0.4), radius: 3, x: 0, y: 1)
+                }
+            }
+            .frame(height: 4)
+        }
+    }
+}
+
+// MARK: - 登录失效提示
+
+/// 单账号登录失效：凭证保留，引导到设置-多账号重新授权（管理操作在设置页完成）
+private struct AccountUnauthorizedHint: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.red)
+
+            LText("登录失效，请到设置-多账号重新授权")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.kimiTextSecondary)
+
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.red.opacity(0.10))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
@@ -4744,16 +4841,19 @@ final class KimiCodeBarModel: ObservableObject {
 
     // MARK: - OAuth 授权登录（添加账号）
 
-    /// 添加一个账号：启动 Device Code Flow → 打开浏览器 → 后台轮询直至授权完成，
+    /// 添加一个账号：启动 Device Code Flow → 后台轮询直至授权完成，
     /// 成功后尽力去重再加入账号列表。0 账号时即添加第一个账号（自动成为主账号）。
+    /// 仅在无任何账号（首次登录）时自动打开浏览器；已有账号时不自动打开——
+    /// 浏览器当前登录的可能是其他账号，自动打开会直接以该账号完成授权，用户无法登录全新账号。
     func startOAuthLogin() {
-        runDeviceAuthorizationFlow { token in
+        runDeviceAuthorizationFlow(autoOpenBrowser: accounts.isEmpty) { token in
             await self.finishAddingAccount(token: token)
         }
     }
 
     /// 设备授权流程的公共部分，成功后由 onSuccess 决定 token 的用途（添加账号 / 重新授权）。
-    private func runDeviceAuthorizationFlow(onSuccess: @escaping (KimiOAuthToken) async -> Void) {
+    /// autoOpenBrowser 为 true 时拿到授权链接后直接呼出浏览器，否则由用户在界面手动操作。
+    private func runDeviceAuthorizationFlow(autoOpenBrowser: Bool, onSuccess: @escaping (KimiOAuthToken) async -> Void) {
         oauthLoginTask?.cancel()
         oauthLoginError = nil
         oauthDeviceAuth = nil
@@ -4772,7 +4872,7 @@ final class KimiCodeBarModel: ObservableObject {
             case .success(let value):
                 auth = value
                 oauthDeviceAuth = auth
-                if let urlString = auth.displayURL, let url = URL(string: urlString) {
+                if autoOpenBrowser, let urlString = auth.displayURL, let url = URL(string: urlString) {
                     NSWorkspace.shared.open(url)
                 }
             }
@@ -4879,7 +4979,7 @@ final class KimiCodeBarModel: ObservableObject {
     /// 重新授权：对指定账号重走设备授权流程，成功后替换其 token 并更新账号标识。
     /// 用于「登录失效」的账号恢复；不会删除该账号的别名等其它信息。
     func reauthorizeAccount(_ id: UUID) {
-        runDeviceAuthorizationFlow { token in
+        runDeviceAuthorizationFlow(autoOpenBrowser: false) { token in
             var identifier: String?
             if case .success(let quota) = await self.service.fetchQuota(token: token.accessToken) {
                 identifier = quota.userIdentifier

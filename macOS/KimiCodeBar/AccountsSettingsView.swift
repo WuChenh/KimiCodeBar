@@ -37,7 +37,7 @@ struct AccountsSettingsView: View {
                     .foregroundStyle(.kimiTextPrimary)
 
                 // 账号列表
-                SettingsCard(title: languageManager.tr("账号列表")) {
+                SettingsCard {
                     if model.accounts.isEmpty {
                         emptyState
                     } else {
@@ -92,12 +92,6 @@ struct AccountsSettingsView: View {
                         }
                     }
                 }
-
-                // 说明文案
-                LText("账号用于在 Bar 中查看配额；「切换账号」会把该账号的凭证写入 Kimi CLI，更换 CLI 的登录账号。")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.kimiTextSecondary)
-                    .padding(.horizontal, 4)
             }
             .padding(.horizontal, 24)
             .padding(.top, 44)
@@ -277,7 +271,7 @@ private struct AccountRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // 第一行：账号名称 + 状态标签，右侧只保留主操作（切换账号 / 重新授权）
+            // 第一行：账号名称 + 状态标签
             HStack(spacing: 6) {
                 Text(displayName)
                     .font(.system(size: 13, weight: .medium))
@@ -299,8 +293,22 @@ private struct AccountRow: View {
                 if case .unauthorized = state {
                     StatusTag(text: languageManager.tr("登录失效"), color: .red)
                 }
+            }
 
-                Spacer()
+            statusLine
+
+            // 第二行：全部操作按钮横排展开
+            HStack(spacing: 8) {
+                AccountActionButton(
+                    title: languageManager.tr("设为主账号"),
+                    disabled: isPrimary,
+                    action: onSetPrimary
+                )
+
+                AccountActionButton(
+                    title: languageManager.tr("重命名"),
+                    action: onRename
+                )
 
                 if case .unauthorized = state {
                     AccountActionButton(
@@ -318,24 +326,6 @@ private struct AccountRow: View {
                     )
                     .help(languageManager.tr("将该账号的凭证写入 Kimi CLI，更换 CLI 的登录账号"))
                 }
-            }
-
-            statusLine
-
-            // 第二行：次要操作；删除右置，与常规操作拉开距离
-            HStack(spacing: 8) {
-                AccountActionButton(
-                    title: languageManager.tr("设为主账号"),
-                    disabled: isPrimary,
-                    action: onSetPrimary
-                )
-
-                AccountActionButton(
-                    title: languageManager.tr("重命名"),
-                    action: onRename
-                )
-
-                Spacer()
 
                 AccountActionButton(
                     title: languageManager.tr("删除"),
@@ -375,7 +365,8 @@ private struct AccountRow: View {
 
 // MARK: - 添加账号授权引导
 
-/// 设备授权流程进行中的引导界面：授权码 + 复制 + 打开授权页 + 取消。
+/// 设备授权流程进行中的引导界面：授权码 + 复制 + 复制授权链接 + 取消。
+/// 不自动呼出浏览器（浏览器可能登录着其他账号），由用户复制链接后自行选择浏览器打开。
 /// 视觉对齐 BasicSettingsView 的 OAuth 授权中区域。
 private struct AddAccountAuthorizingView: View {
     let auth: KimiDeviceAuthorization
@@ -384,8 +375,10 @@ private struct AddAccountAuthorizingView: View {
 
     @State private var isHoveredCancel = false
     @State private var isHoveredCopyCode = false
-    @State private var isHoveredReopen = false
+    @State private var isHoveredCopyLink = false
+    @State private var isHoveredOpen = false
     @State private var isCodeCopied = false
+    @State private var isLinkCopied = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -457,23 +450,49 @@ private struct AddAccountAuthorizingView: View {
                 .cursor(.pointingHand)
                 .onHover { isHoveredCopyCode = $0 }
 
-                if let urlString = auth.displayURL, let url = URL(string: urlString) {
-                    Button(action: { NSWorkspace.shared.open(url) }) {
+                if let urlString = auth.displayURL {
+                    Button(action: {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(urlString, forType: .string)
+                        isLinkCopied = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            isLinkCopied = false
+                        }
+                    }) {
                         HStack(spacing: 4) {
-                            Image(systemName: "safari")
+                            Image(systemName: isLinkCopied ? "checkmark" : "link")
                                 .font(.system(size: 11, weight: .medium))
-                            LText("打开授权页")
+                            LText(isLinkCopied ? "已复制" : "复制授权链接")
                                 .font(.system(size: 12, weight: .medium))
                         }
-                        .foregroundStyle(isHoveredReopen ? .white : .white.opacity(0.9))
+                        .foregroundStyle(isHoveredCopyLink ? .white : .white.opacity(0.9))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(isHoveredReopen ? Color.kimiBlue.opacity(0.85) : Color.kimiBlue)
+                        .background(isHoveredCopyLink ? Color.kimiBlue.opacity(0.85) : Color.kimiBlue)
                         .clipShape(RoundedRectangle(cornerRadius: 6))
                     }
                     .buttonStyle(.plain)
                     .cursor(.pointingHand)
-                    .onHover { isHoveredReopen = $0 }
+                    .onHover { isHoveredCopyLink = $0 }
+
+                    if let url = URL(string: urlString) {
+                        Button(action: { NSWorkspace.shared.open(url) }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "safari")
+                                    .font(.system(size: 11, weight: .medium))
+                                LText("打开授权页")
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundStyle(isHoveredOpen ? .kimiTextPrimary : .kimiTextSecondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(isHoveredOpen ? Color.kimiTextPrimary.opacity(0.14) : Color.kimiTextPrimary.opacity(0.08))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
+                        .buttonStyle(.plain)
+                        .cursor(.pointingHand)
+                        .onHover { isHoveredOpen = $0 }
+                    }
                 }
             }
             .padding(.horizontal, 16)

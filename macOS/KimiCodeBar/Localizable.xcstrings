@@ -871,6 +871,17 @@
         }
       }
     },
+    "复制授权链接" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Authorization Link"
+          }
+        }
+      }
+    },
     "复制错误信息" : {
       "extractionState" : "stale",
       "localizations" : {
