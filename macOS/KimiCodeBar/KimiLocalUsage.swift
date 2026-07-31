@@ -40,6 +40,8 @@ private struct ScanState: Codable {
     var offsets: [String: Int] = [:]
     /// 累计按天用量（key = yyyy-MM-dd 日期字符串）
     var daysByKey: [String: LocalUsageDayCodable] = [:]
+    /// 按小时用量（key = yyyy-MM-dd-HH），仅保留当天，用于「今日」波浪曲线
+    var hoursByKey: [String: Int] = [:]
 }
 
 private struct LocalUsageDayCodable: Codable {
@@ -70,6 +72,8 @@ final class KimiLocalUsageService: ObservableObject {
     static let shared = KimiLocalUsageService()
 
     @Published private(set) var days: [LocalUsageDay] = []
+    /// 今日按小时用量（24 格，下标为小时），供「今日」波浪曲线使用
+    @Published private(set) var todayHours: [Int] = []
     @Published private(set) var isLoading = false
     @Published private(set) var hasScanned = false
 
@@ -84,10 +88,11 @@ final class KimiLocalUsageService: ObservableObject {
         if let lastScanDate, Date().timeIntervalSince(lastScanDate) < throttleInterval { return }
         isLoading = true
         Task {
-            let (scanned, _) = await Task.detached(priority: .utility) {
+            let (scanned, hours, _) = await Task.detached(priority: .utility) {
                 Self.scanSessionFiles()
             }.value
             days = scanned
+            todayHours = hours
             hasScanned = true
             isLoading = false
             lastScanDate = Date()
@@ -148,9 +153,14 @@ final class KimiLocalUsageService: ObservableObject {
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return ScanState()
         }
+        // v1 状态没有按小时粒度：整体作废，触发一次全量重扫重建（含小时数据）
+        guard (json["version"] as? Int ?? 1) >= 2 else { return ScanState() }
         var state = ScanState()
         if let offsets = json["offsets"] as? [String: Int] {
             state.offsets = offsets
+        }
+        if let hours = json["hours"] as? [String: Int] {
+            state.hoursByKey = hours
         }
         if let days = json["days"] as? [String: [String: Any]] {
             for (key, dict) in days {
@@ -170,7 +180,12 @@ final class KimiLocalUsageService: ObservableObject {
         let daysDict = state.daysByKey.mapValues { d -> [String: Any] in
             ["date": d.date, "input": d.input, "output": d.output, "cacheRead": d.cacheRead]
         }
-        let obj: [String: Any] = ["offsets": state.offsets, "days": daysDict]
+        let obj: [String: Any] = [
+            "version": 2,
+            "offsets": state.offsets,
+            "days": daysDict,
+            "hours": state.hoursByKey
+        ]
         guard let data = try? JSONSerialization.data(withJSONObject: obj) else { return }
         try? data.write(to: stateFileURL, options: .atomic)
     }
@@ -179,7 +194,8 @@ final class KimiLocalUsageService: ObservableObject {
 
     /// 增量扫描：只读取每个 wire.jsonl 自上次偏移量以来的新增内容。
     /// 累计结果随状态持久化，重启后从磁盘恢复继续累加。
-    nonisolated private static func scanSessionFiles() -> ([LocalUsageDay], ScanState) {
+    /// 返回：按天用量 + 今日按小时用量（24 格，下标为小时）+ 最新扫描状态。
+    nonisolated private static func scanSessionFiles() -> ([LocalUsageDay], [Int], ScanState) {
         let environment = ProcessInfo.processInfo.environment
         let root = environment["KIMI_CODE_HOME"] ?? (NSHomeDirectory() + "/.kimi-code")
         let rootURL = URL(fileURLWithPath: root, isDirectory: true)
@@ -188,7 +204,7 @@ final class KimiLocalUsageService: ObservableObject {
             at: sessionsURL,
             includingPropertiesForKeys: [.fileSizeKey],
             options: [.skipsHiddenFiles]
-        ) else { return ([], loadScanState()) }
+        ) else { return ([], [], loadScanState()) }
 
         // 从磁盘恢复上次状态
         var state = loadScanState()
@@ -236,18 +252,25 @@ final class KimiLocalUsageService: ObservableObject {
                           let usage = event["usage"] as? [String: Any],
                           let timeMs = (event["time"] as? NSNumber)?.doubleValue else { return }
 
-                    let day = calendar.startOfDay(for: Date(timeIntervalSince1970: timeMs / 1000))
+                    let eventDate = Date(timeIntervalSince1970: timeMs / 1000)
+                    let day = calendar.startOfDay(for: eventDate)
                     let key = scanDayKeyFormatter.string(from: day)
                     var entry = state.daysByKey[key] ?? LocalUsageDayCodable(
                         date: day.timeIntervalSince1970, input: 0, output: 0, cacheRead: 0
                     )
                     let cacheRead = (usage["inputCacheRead"] as? NSNumber)?.intValue ?? 0
-                    entry.input += ((usage["inputOther"] as? NSNumber)?.intValue ?? 0)
+                    let input = ((usage["inputOther"] as? NSNumber)?.intValue ?? 0)
                         + cacheRead
                         + ((usage["inputCacheCreation"] as? NSNumber)?.intValue ?? 0)
-                    entry.output += (usage["output"] as? NSNumber)?.intValue ?? 0
+                    let output = (usage["output"] as? NSNumber)?.intValue ?? 0
+                    entry.input += input
+                    entry.output += output
                     entry.cacheRead += cacheRead
                     state.daysByKey[key] = entry
+
+                    // 小时粒度（服务「今日」波浪曲线）
+                    let hourKey = String(format: "%@-%02d", key, calendar.component(.hour, from: eventDate))
+                    state.hoursByKey[hourKey, default: 0] += input + output
                 }
             }
 
@@ -259,6 +282,10 @@ final class KimiLocalUsageService: ObservableObject {
         for removedKey in state.offsets.keys where !seenRelPaths.contains(removedKey) {
             state.offsets.removeValue(forKey: removedKey)
         }
+
+        // 小时粒度只服务「今日」曲线：裁剪掉今天之前的 bucket（key 前缀 yyyy-MM-dd 可直接比较）
+        let todayKey = scanDayKeyFormatter.string(from: calendar.startOfDay(for: Date()))
+        state.hoursByKey = state.hoursByKey.filter { $0.key.hasPrefix(todayKey) }
 
         // 持久化状态
         saveScanState(state)
@@ -273,7 +300,15 @@ final class KimiLocalUsageService: ObservableObject {
             )
         }.sorted { $0.date < $1.date }
 
-        return (days, state)
+        // 今日按小时用量（24 格，下标为小时）
+        var todayHours = [Int](repeating: 0, count: 24)
+        for (key, tokens) in state.hoursByKey {
+            if let hour = Int(key.suffix(2)), todayHours.indices.contains(hour) {
+                todayHours[hour] += tokens
+            }
+        }
+
+        return (days, todayHours, state)
     }
 }
 
@@ -287,6 +322,7 @@ struct LocalUsageCard: View {
     @AppStorage("localUsageRange") private var rangeRaw: String = LocalUsageRange.all.rawValue
     @State private var hoveredDay: LocalUsageDay?
     @State private var hoveredSegment: LocalUsageRange?
+    @State private var hoveredHourIndex: Int?
     @State private var shimmerPhase: CGFloat = -1
 
     private let chartHeight: CGFloat = 44
@@ -475,6 +511,8 @@ struct LocalUsageCard: View {
                 .foregroundStyle(.kimiTextTertiary)
                 .frame(maxWidth: .infinity)
                 .frame(height: chartHeight + tooltipZoneHeight)
+        } else if range == .today {
+            todayWaveChart
         } else {
             barChart
         }
@@ -572,6 +610,148 @@ struct LocalUsageCard: View {
         let count = chartDays.count
         let index = chartDays.firstIndex(where: { $0.id == day.id }) ?? 0
         let centerX = size.width * (CGFloat(index) + 0.5) / CGFloat(max(count, 1))
+        // tooltip 宽约 96，clamp 防止贴边时超出卡片
+        let clampedX = min(max(centerX, 48), size.width - 48)
+        return CGPoint(x: clampedX, y: tooltipZoneHeight / 2)
+    }
+
+    // MARK: 今日波浪曲线（按小时，股市风格面积图）
+
+    /// 今日曲线数据点：0 点到当前小时（未来小时不画）
+    private var todayChartPoints: [(hour: Int, tokens: Int)] {
+        let currentHour = Calendar.current.component(.hour, from: Date())
+        return (0...currentHour).map { hour in
+            (hour, hour < service.todayHours.count ? service.todayHours[hour] : 0)
+        }
+    }
+
+    private var todayWaveChart: some View {
+        GeometryReader { proxy in
+            let points = todayChartPoints
+            let maxTokens = max(points.map(\.tokens).max() ?? 0, 1)
+            // 曲线绘制区在顶部 tooltip 区之下
+            let chartRect = CGRect(x: 0, y: tooltipZoneHeight, width: proxy.size.width, height: chartHeight)
+            let coords = todayCurveCoords(points: points, maxTokens: maxTokens, in: chartRect)
+
+            ZStack(alignment: .topLeading) {
+                // 曲线下方蓝色面积渐变
+                todayAreaPath(coords: coords, in: chartRect)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.kimiBlue.opacity(0.30), Color.kimiBlue.opacity(0.02)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+
+                // 蓝色平滑曲线
+                smoothedLinePath(coords)
+                    .stroke(Color.kimiBlue, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+
+                if let hovered = hoveredHourIndex, coords.indices.contains(hovered) {
+                    let point = coords[hovered]
+                    // 垂直指示线 + 数据点
+                    Path { path in
+                        path.move(to: CGPoint(x: point.x, y: chartRect.minY))
+                        path.addLine(to: CGPoint(x: point.x, y: chartRect.maxY))
+                    }
+                    .stroke(Color.kimiBlue.opacity(0.35), lineWidth: 1)
+
+                    Circle()
+                        .fill(Color.kimiBlue)
+                        .frame(width: 7, height: 7)
+                        .overlay(Circle().stroke(Color.white.opacity(0.9), lineWidth: 1.5))
+                        .position(point)
+
+                    hourTooltipView(hour: points[hovered].hour, tokens: points[hovered].tokens)
+                        .position(hourTooltipPosition(for: hovered, in: proxy.size))
+                }
+            }
+            .contentShape(Rectangle())
+            .onContinuousHover(coordinateSpace: .local) { phase in
+                switch phase {
+                case .active(let location):
+                    guard !coords.isEmpty else { return }
+                    let step = proxy.size.width / CGFloat(max(coords.count - 1, 1))
+                    hoveredHourIndex = min(max(Int((location.x / step).rounded()), 0), coords.count - 1)
+                case .ended:
+                    hoveredHourIndex = nil
+                }
+            }
+        }
+        .frame(height: chartHeight + tooltipZoneHeight)
+    }
+
+    /// 数据点 → 曲线坐标（x 均分，y 按最大值归一，底部对齐）
+    private func todayCurveCoords(points: [(hour: Int, tokens: Int)], maxTokens: Int, in rect: CGRect) -> [CGPoint] {
+        points.enumerated().map { index, point in
+            let x = points.count > 1
+                ? rect.width * CGFloat(index) / CGFloat(points.count - 1)
+                : rect.midX
+            let y = rect.maxY - CGFloat(point.tokens) / CGFloat(maxTokens) * rect.height
+            return CGPoint(x: x, y: y)
+        }
+    }
+
+    /// Catmull-Rom 平滑曲线（经过每个数据点的波浪效果）
+    private func smoothedLinePath(_ coords: [CGPoint]) -> Path {
+        var path = Path()
+        guard let first = coords.first else { return path }
+        guard coords.count > 1 else {
+            // 只有一个数据点（刚过 0 点）：画一小段横线避免空白
+            path.move(to: CGPoint(x: first.x - 2, y: first.y))
+            path.addLine(to: CGPoint(x: first.x + 2, y: first.y))
+            return path
+        }
+        path.move(to: first)
+        for index in 0..<(coords.count - 1) {
+            let p0 = coords[max(index - 1, 0)]
+            let p1 = coords[index]
+            let p2 = coords[index + 1]
+            let p3 = coords[min(index + 2, coords.count - 1)]
+            let control1 = CGPoint(x: p1.x + (p2.x - p0.x) / 6, y: p1.y + (p2.y - p0.y) / 6)
+            let control2 = CGPoint(x: p2.x - (p3.x - p1.x) / 6, y: p2.y - (p3.y - p1.y) / 6)
+            path.addCurve(to: p2, control1: control1, control2: control2)
+        }
+        return path
+    }
+
+    /// 曲线下方闭合区域（面积填充）
+    private func todayAreaPath(coords: [CGPoint], in rect: CGRect) -> Path {
+        var path = smoothedLinePath(coords)
+        guard let first = coords.first, let last = coords.last else { return path }
+        path.addLine(to: CGPoint(x: last.x, y: rect.maxY))
+        path.addLine(to: CGPoint(x: first.x, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+
+    private func hourTooltipView(hour: Int, tokens: Int) -> some View {
+        let formatted = KimiLocalUsageService.formatTokenCount(tokens)
+        return VStack(spacing: 0) {
+            Text(String(format: "%02d:00 · %@%@", hour, formatted.value, formatted.unit))
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.kimiTextPrimary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Color.kimiPanelBackground)
+                .clipShape(Capsule())
+                .overlay(
+                    Capsule()
+                        .stroke(Color.kimiTextPrimary.opacity(0.15), lineWidth: 0.5)
+                )
+
+            TooltipTriangle()
+                .fill(Color.kimiPanelBackground)
+                .frame(width: 10, height: 5)
+        }
+    }
+
+    private func hourTooltipPosition(for index: Int, in size: CGSize) -> CGPoint {
+        let count = todayChartPoints.count
+        let centerX = count > 1
+            ? size.width * CGFloat(index) / CGFloat(count - 1)
+            : size.width / 2
         // tooltip 宽约 96，clamp 防止贴边时超出卡片
         let clampedX = min(max(centerX, 48), size.width - 48)
         return CGPoint(x: clampedX, y: tooltipZoneHeight / 2)
