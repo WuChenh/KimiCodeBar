@@ -62,4 +62,4 @@ All data is stored locally. APIs only communicate with official Kimi servers. Th
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE). You are free to use, copy, modify, and distribute this project, provided that the original copyright notice and license text are retained.
+This project is licensed under the [MIT License](LICENSE). You are free to use, copy, modify, and distribute this project, provided that the original copyright notice (Copyright © 2026 xifandev) and license text are retained.
