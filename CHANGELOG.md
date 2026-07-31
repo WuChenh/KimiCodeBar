@@ -1,3 +1,19 @@
+## v1.3.0
+
+- 新增多账号管理功能：支持添加多个 Kimi 账号，一键切换监控不同账号的配额消耗
+- 菜单栏图标适配系统菜单栏明暗外观，7D/5H 紧凑样式布局优化
+- App 图标更新为 macOS 规范圆角矩形样式
+- 新增 macOS 26 Tahoe 设计规范支持
+- 设置面板菜单栏预览修复模板图渲染，DeepSeek API Key 卡片支持双语切换
+
+### English
+
+- Multi-account support: add multiple Kimi accounts, switch monitoring with one click
+- Menu bar icon adapts to system light/dark appearance, optimized 7D/5H compact layout
+- App icon updated to macOS-standard rounded rectangle style
+- macOS 26 Tahoe design language support
+- Settings panel menu bar preview fix, DeepSeek API Key card bilingual support
+
 ## v1.2.3
 
 - 自动归档页面支持折叠/展开工作区文件夹，标题行增加悬停高亮反馈
