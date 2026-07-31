@@ -3343,10 +3343,10 @@ struct BasicSettingsView: View {
                 }
 
                 // KimiCode CLI 检查更新
-                SettingsCard(title: languageManager.tr("KimiCode CLI 检查更新")) {
+                SettingsCard {
                     VStack(alignment: .leading, spacing: 0) {
                         SettingsCardRow(
-                            title: languageManager.tr("启用检查更新"),
+                            title: languageManager.tr("KimiCode CLI 检查更新"),
                             subtitle: languageManager.tr("关闭后打开面板和后台都不再检查新版本")
                         ) {
                             Toggle("", isOn: $model.enableKimiCLIUpdateCheck)
