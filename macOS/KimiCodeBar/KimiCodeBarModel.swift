@@ -195,8 +195,14 @@ final class KimiCodeBarModel: ObservableObject {
     KimiAccountStore.shared.reload()
     let snapshot = KimiAccountStore.shared.snapshot
     var changed = false
-    if accounts != snapshot.accounts { accounts = snapshot.accounts; changed = true }
-    if primaryAccountID != snapshot.primaryAccountID { primaryAccountID = snapshot.primaryAccountID; changed = true }
+    if accounts != snapshot.accounts {
+      accounts = snapshot.accounts
+      changed = true
+    }
+    if primaryAccountID != snapshot.primaryAccountID {
+      primaryAccountID = snapshot.primaryAccountID
+      changed = true
+    }
     if changed, let token = accounts.first(where: { $0.id == primaryAccountID })?.token {
       oauthToken = token
     }

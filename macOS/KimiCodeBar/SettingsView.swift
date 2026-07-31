@@ -1250,7 +1250,7 @@ struct SkillsSettingsView: View {
                 }
               }
             }
-          .background(.ultraThinMaterial)
+            .background(.ultraThinMaterial)
 
             Divider()
               .background(Color.kimiTextPrimary.opacity(0.08))

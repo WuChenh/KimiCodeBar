@@ -73,7 +73,9 @@ final class KimiAccountStore {
   /// Bar 的授权、刷新、删除账号都只操作本文件，绝不读写 CLI 的凭证，
   /// 避免因 refresh_token 服务端轮换导致 CLI 凭证失效。
   static func credentialsFileURL() -> URL {
-    let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+    let appSupport = FileManager.default.urls(
+      for: .applicationSupportDirectory, in: .userDomainMask
+    ).first!
     return appSupport.appendingPathComponent("KimiCodeBar/credentials.json")
   }
 
@@ -213,7 +215,8 @@ final class KimiAccountStore {
         attributes: [.posixPermissions: 0o700]
       )
 
-      let tempURL = directory.appendingPathComponent(".\(url.lastPathComponent).tmp.\(ProcessInfo.processInfo.processIdentifier)")
+      let tempURL = directory.appendingPathComponent(
+        ".\(url.lastPathComponent).tmp.\(ProcessInfo.processInfo.processIdentifier)")
       try data.write(to: tempURL, options: .atomic)
 
       if FileManager.default.fileExists(atPath: url.path) {

@@ -116,10 +116,11 @@ struct AccountsSettingsView: View {
       Button(LanguageManager.tr("取消"), role: .cancel) {}
     } message: {
       if let account = accountPendingDeletion {
-        Text(LanguageManager.tr(
-          "确定删除「%1$@」吗？只会删除 Bar 中保存的授权，不影响 Kimi CLI 的登录状态。",
-          arguments: [model.displayName(for: account)]
-        ))
+        Text(
+          LanguageManager.tr(
+            "确定删除「%1$@」吗？只会删除 Bar 中保存的授权，不影响 Kimi CLI 的登录状态。",
+            arguments: [model.displayName(for: account)]
+          ))
       }
     }
   }
@@ -315,7 +316,10 @@ private struct AddAccountAuthorizingView: View {
             .foregroundStyle(isHoveredCancel ? .kimiTextPrimary : .kimiTextSecondary)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(isHoveredCancel ? Color.kimiTextPrimary.opacity(0.14) : Color.kimiTextPrimary.opacity(0.08))
+            .background(
+              isHoveredCancel
+                ? Color.kimiTextPrimary.opacity(0.14) : Color.kimiTextPrimary.opacity(0.08)
+            )
             .clipShape(RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)
@@ -358,7 +362,10 @@ private struct AddAccountAuthorizingView: View {
           .foregroundStyle(isHoveredCopyCode ? .kimiTextPrimary : .kimiTextSecondary)
           .padding(.horizontal, 10)
           .padding(.vertical, 6)
-          .background(isHoveredCopyCode ? Color.kimiTextPrimary.opacity(0.14) : Color.kimiTextPrimary.opacity(0.08))
+          .background(
+            isHoveredCopyCode
+              ? Color.kimiTextPrimary.opacity(0.14) : Color.kimiTextPrimary.opacity(0.08)
+          )
           .clipShape(RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)
@@ -406,7 +413,11 @@ private struct AccountPrimaryButton: View {
         .foregroundStyle(.white)
         .padding(.horizontal, 16)
         .padding(.vertical, 7)
-        .background(disabled ? Color.kimiBlue.opacity(0.6) : (isHovered ? Color.kimiBlue.opacity(0.85) : Color.kimiBlue))
+        .background(
+          disabled
+            ? Color.kimiBlue.opacity(0.6)
+            : (isHovered ? Color.kimiBlue.opacity(0.85) : Color.kimiBlue)
+        )
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
     .buttonStyle(.plain)

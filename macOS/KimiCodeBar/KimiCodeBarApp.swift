@@ -117,53 +117,56 @@ struct KimiCodeBarApp: App {
 // MARK: - 配色
 
 private func dynamicColor(light: NSColor, dark: NSColor) -> Color {
-    Color(NSColor(name: nil, dynamicProvider: { appearance in
+  Color(
+    NSColor(
+      name: nil,
+      dynamicProvider: { appearance in
         let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         return isDark ? dark : light
-    }))
+      }))
 }
 
 extension ShapeStyle where Self == Color {
-    static var kimiPanelBackground: Color {
-        dynamicColor(
-            light: NSColor(red: 0.91, green: 0.91, blue: 0.93, alpha: 1.0),
-            dark: NSColor(red: 0.06, green: 0.08, blue: 0.13, alpha: 1.0)
-        )
-    }
+  static var kimiPanelBackground: Color {
+    dynamicColor(
+      light: NSColor(red: 0.91, green: 0.91, blue: 0.93, alpha: 1.0),
+      dark: NSColor(red: 0.06, green: 0.08, blue: 0.13, alpha: 1.0)
+    )
+  }
 
-    static var kimiCardBackground: Color {
-        dynamicColor(
-            light: NSColor(white: 0.99, alpha: 1.0),
-            dark: NSColor(red: 0.11, green: 0.14, blue: 0.21, alpha: 1.0)
-        )
-    }
+  static var kimiCardBackground: Color {
+    dynamicColor(
+      light: NSColor(white: 0.99, alpha: 1.0),
+      dark: NSColor(red: 0.11, green: 0.14, blue: 0.21, alpha: 1.0)
+    )
+  }
 
-    /// Kimi 品牌蓝色
-    static var kimiBlue: Color { Color(red: 0.23, green: 0.51, blue: 0.96) }
+  /// Kimi 品牌蓝色
+  static var kimiBlue: Color { Color(red: 0.23, green: 0.51, blue: 0.96) }
 
-    /// 主文本色，显式控制浅色/深色以保持跨版本一致性
-    static var kimiTextPrimary: Color {
-        dynamicColor(
-            light: NSColor(white: 0.12, alpha: 1.0),
-            dark: NSColor(white: 1.0, alpha: 1.0)
-        )
-    }
+  /// 主文本色，显式控制浅色/深色以保持跨版本一致性
+  static var kimiTextPrimary: Color {
+    dynamicColor(
+      light: NSColor(white: 0.12, alpha: 1.0),
+      dark: NSColor(white: 1.0, alpha: 1.0)
+    )
+  }
 
-    /// 次级文本色
-    static var kimiTextSecondary: Color {
-        dynamicColor(
-            light: NSColor(white: 0.35, alpha: 1.0),
-            dark: NSColor(white: 1.0, alpha: 0.55)
-        )
-    }
+  /// 次级文本色
+  static var kimiTextSecondary: Color {
+    dynamicColor(
+      light: NSColor(white: 0.35, alpha: 1.0),
+      dark: NSColor(white: 1.0, alpha: 0.55)
+    )
+  }
 
-    /// 三级文本色
-    static var kimiTextTertiary: Color {
-        dynamicColor(
-            light: NSColor(white: 0.50, alpha: 1.0),
-            dark: NSColor(white: 1.0, alpha: 0.40)
-        )
-    }
+  /// 三级文本色
+  static var kimiTextTertiary: Color {
+    dynamicColor(
+      light: NSColor(white: 0.50, alpha: 1.0),
+      dark: NSColor(white: 1.0, alpha: 0.40)
+    )
+  }
 }
 
 // MARK: - 菜单栏图标
@@ -256,7 +259,7 @@ enum MenuBarTextRenderer {
   ) -> NSImage {
     let kimiImage = image(scheme: scheme, weekly: weekly, fiveHour: fiveHour)
 
-    let content = HStack(spacing: 4) {
+    let content = HStack(spacing: 8) {
       Image(nsImage: kimiImage)
       Text(deepseekText)
         .font(.system(size: 11, weight: .medium, design: .rounded))
@@ -270,33 +273,30 @@ enum MenuBarTextRenderer {
     return render(content)
   }
 
-  /// 原始紧凑样式：48pt 宽，两行 7D/5H。
-  /// 这是用户已经深度微调过的样式，原封不动保留。
+  /// 紧凑样式：两行 7D/5H，标签与数值紧密排列。
   private static func compactImage(weekly: Int, fiveHour: Int) -> NSImage {
     let content = VStack(alignment: .trailing, spacing: -1) {
-      HStack(spacing: 2) {
+      HStack(spacing: 1) {
         Text("7D")
           .font(.system(size: 10, weight: .medium, design: .default))
-          .monospacedDigit()
-          .frame(width: 16, alignment: .leading)
+          .frame(width: 14, alignment: .leading)
         Text(percentageText(weekly))
           .font(percentageFont(for: weekly))
           .monospacedDigit()
-          .frame(width: 30, alignment: .trailing)
+          .frame(width: 27, alignment: .trailing)
       }
-      HStack(spacing: 2) {
+      HStack(spacing: 1) {
         Text("5H")
           .font(.system(size: 10, weight: .medium, design: .default))
-          .monospacedDigit()
-          .frame(width: 16, alignment: .leading)
+          .frame(width: 14, alignment: .leading)
         Text(percentageText(fiveHour))
           .font(percentageFont(for: fiveHour))
           .monospacedDigit()
-          .frame(width: 30, alignment: .trailing)
+          .frame(width: 27, alignment: .trailing)
       }
     }
     .foregroundStyle(textColor)
-    .frame(width: 48, height: 20, alignment: .trailing)
+    .frame(width: 42, height: 20, alignment: .trailing)
 
     return render(content)
   }
@@ -1621,7 +1621,10 @@ struct ActionButton: View {
       .foregroundStyle(
         disabled ? .kimiTextTertiary : (isHovered ? .kimiTextPrimary : .kimiTextSecondary)
       )
-      .glassEffectIfAvailable(in: RoundedRectangle(cornerRadius: DesignConstants.cornerRadiusMedium), isHovered: isHovered && !disabled)
+      .glassEffectIfAvailable(
+        in: RoundedRectangle(cornerRadius: DesignConstants.cornerRadiusMedium),
+        isHovered: isHovered && !disabled
+      )
       .clipShape(RoundedRectangle(cornerRadius: DesignConstants.cornerRadiusMedium))
     }
     .buttonStyle(.plain)
