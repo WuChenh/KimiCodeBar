@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KimiCodeBar 更新日志</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      line-height: 1.6;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .thanks {
+      font-size: 14px;
+      color: #8b949e;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      background: rgba(88, 166, 255, 0.08);
+      border-radius: 8px;
+      border: 1px solid rgba(88, 166, 255, 0.2);
+    }
+    .thanks a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      position: relative;
+      padding-left: 18px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #c9d1d9;
+    }
+    li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #58a6ff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="thanks">
+    感谢 <a href="https://github.com/MoYiC6" target="_blank">@MoYiC6</a> 与 <a href="https://github.com/ijoeji" target="_blank">@ijoeji</a> 为本版本贡献！
+  </div>
+
+  <ul>
+    <li>新增多账号配额监控：支持在 Bar 中添加、切换与管理多个 Kimi 账号，菜单栏始终展示主账号用量。</li>
+    <li>修复菜单栏文字在浅色菜单栏外观下几乎不可读的问题：改用模板图机制，由系统自动适配深色/浅色菜单栏与高对比度模式。</li>
+    <li>应用图标改为符合 macOS 规范的超椭圆圆角矩形，在 Finder 与启动台中与其他应用图标风格更一致。</li>
+    <li>修复 DMG 安装包与自动更新包提示「已损坏」的问题，确保 App bundle 已携带公证票据。</li>
+  </ul>
+</body>
+</html>

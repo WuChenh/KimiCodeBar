@@ -479,6 +479,21 @@
         color: var(--text-3);
       }
 
+      /* 按钮内双行文字：主标题 + 副标题 */
+      .btn-text-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        line-height: 1.25;
+      }
+
+      .btn-sub {
+        font-size: 11px;
+        font-weight: 500;
+        opacity: 0.75;
+      }
+
       /* ============ 产品面板展示 ============ */
       .hero-shot-wrap {
         padding: 0;
@@ -3517,15 +3532,17 @@
                   </svg>
                   <span data-i18n="downloadMacOS">macOS 版</span>
                 </a>
-                <span class="btn btn-disabled btn-lg">
+                <a class="btn btn-outline-blue btn-lg" href="https://github.com/JYH1878/KimiCodeBar-Windows/releases" target="_blank" rel="noopener">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
                     <line x1="12" y1="15" x2="12" y2="3" />
                   </svg>
-                  <span data-i18n="downloadWindows">Windows 版</span>
-                  <span class="tag tag-wip" data-i18n="tagWip">开发中</span>
-                </span>
+                  <span class="btn-text-stack">
+                    <span data-i18n="downloadWindows">Windows 版</span>
+                    <span class="btn-sub" data-i18n="downloadWindowsNote">由 @JYH1878 独立维护</span>
+                  </span>
+                </a>
               </div>
             </div>
           </div>
@@ -3894,13 +3911,13 @@
                 <p data-i18n="platformMacDesc">菜单栏轻量运行，开箱即用</p>
               </div>
             </div>
-            <div class="platform soon reveal">
+            <div class="platform reveal">
               <div class="icon">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.5 4.4v7.1H3V5.5zm9 8.1H3v7.1l7.5-1.1v-6zm1.5-8.3L21 4v7.5h-7.5V5.3zM13.5 13.5H21V20l-7.5 1.1v-7.6z" /></svg>
               </div>
               <div>
-                <h3>Windows <span class="tag tag-wip" data-i18n="tagWip">开发中</span></h3>
-                <p data-i18n="platformWinDesc">已在路线图上，敬请期待</p>
+                <h3>Windows <span class="tag tag-ok" data-i18n="tagOk">已发布</span></h3>
+                <p data-i18n="platformWinDesc">由 @JYH1878 维护</p>
               </div>
             </div>
           </div>
@@ -3920,7 +3937,18 @@
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              <span data-i18n="downloadCtaPrimary">前往 GitHub Releases 下载</span>
+              <span data-i18n="downloadMacOS">macOS 版</span>
+            </a>
+            <a class="btn btn-outline-blue btn-lg" href="https://github.com/JYH1878/KimiCodeBar-Windows/releases" target="_blank" rel="noopener">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span class="btn-text-stack">
+                <span data-i18n="downloadWindows">Windows 版</span>
+                <span class="btn-sub" data-i18n="downloadWindowsNote">由 @JYH1878 独立维护</span>
+              </span>
             </a>
             <a class="btn btn-ghost btn-lg" href="https://github.com/xifandev/KimiCodeBar/issues" target="_blank" rel="noopener" data-i18n="downloadCtaSecondary">反馈问题 / 建议</a>
           </div>
@@ -4189,6 +4217,7 @@
             heroCheck2: '<b>限额一目了然</b>',
             downloadMacOS: 'macOS 版',
             downloadWindows: 'Windows 版',
+            downloadWindowsNote: '由 @JYH1878 独立维护',
             tagWip: '开发中',
             featuresTitle: '为 Kimi Code 而生',
             featuresDesc: '轻量驻留菜单栏，不占 Dock、不打断心流，需要时一眼可见。',
@@ -4260,7 +4289,7 @@
             platformTitle: '平台支持',
             tagOk: '已发布',
             platformMacDesc: '菜单栏轻量运行，开箱即用',
-            platformWinDesc: '已在路线图上，敬请期待',
+            platformWinDesc: '由 @JYH1878 维护',
             downloadTitle: '现在就把限额<br>放到菜单栏上',
             downloadDesc: '免费 · 开源 · 一分钟完成安装',
             downloadCtaPrimary: '前往 GitHub Releases 下载',
@@ -4305,6 +4334,7 @@
             heroCheck2: '<b>Quota at a glance</b>',
             downloadMacOS: 'macOS',
             downloadWindows: 'Windows',
+            downloadWindowsNote: 'Independently maintained by @JYH1878',
             tagWip: 'Coming soon',
             featuresTitle: 'Built for Kimi Code',
             featuresDesc: 'Lightweight menu bar resident. No Dock icon, no flow interruption, visible when you need it.',
@@ -4376,7 +4406,7 @@
             platformTitle: 'Supported Platforms',
             tagOk: 'Available',
             platformMacDesc: 'Lightweight menu bar app, ready to use',
-            platformWinDesc: 'On the roadmap, stay tuned',
+            platformWinDesc: 'Maintained by @JYH1878',
             downloadTitle: 'Put your quota<br>in the menu bar now',
             downloadDesc: 'Free · Open Source · Install in one minute',
             downloadCtaPrimary: 'Download from GitHub Releases',

@@ -1370,6 +1370,193 @@ struct BoosterWalletCard: View {
   }
 }
 
+// MARK: - 账号配额区（OAuth 多账号）
+
+/// OAuth 多账号模式下的账号配额区：每个账号一行紧凑摘要，
+/// 点击行展开/收起该账号的完整卡片组（本周/5小时用量 + 加油包）。
+struct AccountQuotaListView: View {
+    @StateObject private var model = KimiCodeBarModel.shared
+
+    var body: some View {
+        VStack(spacing: 8) {
+            ForEach(model.accounts) { account in
+                AccountQuotaRow(
+                    account: account,
+                    isPrimary: account.id == model.primaryAccountID
+                )
+            }
+        }
+    }
+}
+
+/// 单个账号的紧凑行 + 展开后的卡片组。展开状态本地管理：主账号默认展开，其余默认收起。
+struct AccountQuotaRow: View {
+    let account: KimiAccount
+    let isPrimary: Bool
+
+    @StateObject private var model = KimiCodeBarModel.shared
+    @StateObject private var languageManager = LanguageManager.shared
+    @State private var isExpanded: Bool
+    @State private var isHovered = false
+
+    init(account: KimiAccount, isPrimary: Bool) {
+        self.account = account
+        self.isPrimary = isPrimary
+        _isExpanded = State(initialValue: isPrimary)
+    }
+
+    /// 该账号最近一次拉取成功的配额（失败时保留旧值）
+    private var quota: KimiQuota? {
+        model.accountQuotas[account.id]
+    }
+
+    /// 该账号当前加载状态
+    private var state: KimiAccountState {
+        model.accountStates[account.id] ?? .idle
+    }
+
+    private var isLoadingState: Bool {
+        if case .loading = state { return true }
+        return false
+    }
+
+    var body: some View {
+        VStack(spacing: 8) {
+            rowButton
+
+            if isExpanded {
+                expandedContent
+            }
+        }
+    }
+
+    // MARK: 紧凑行
+
+    private var rowButton: some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(model.displayName(for: account))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.kimiTextPrimary)
+
+                    if isPrimary {
+                        LText("主账号")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(Color.kimiBlue)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(Color.kimiBlue.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                    }
+
+                    if case .unauthorized = state {
+                        LText("登录失效")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(.red)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(Color.red.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                    }
+                }
+
+                // 摘要行：失败时显示灰色错误提示，否则展示最近一次成功的配额
+                if case .failed(let message) = state {
+                    Text(message)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.kimiTextTertiary)
+                        .lineLimit(1)
+                } else if let quota {
+                    LText("周 %1$d%% · 5h %2$d%%", quota.weekly.percentage, quota.fiveHour.percentage)
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .foregroundStyle(isHovered ? .kimiTextPrimary : .kimiTextSecondary)
+                } else {
+                    Text("--")
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .foregroundStyle(isHovered ? .kimiTextPrimary : .kimiTextSecondary)
+                }
+            }
+
+            Spacer(minLength: 8)
+
+            if case .loading = state {
+                LoadingRing()
+                    .frame(width: 12, height: 12)
+            }
+
+            Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.kimiTextTertiary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.white.opacity(isHovered ? 0.14 : 0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .contentShape(Rectangle())
+        .onHover { isHovered = $0 }
+        .cursor(.pointingHand)
+        .onTapGesture {
+            // 不用动画：MenuBarExtra 面板窗口高度跟随内容变化，SwiftUI 布局动画
+            // 与 macOS 窗口 frame 动画节奏不一致会产生抖动，瞬时切换反而更稳。
+            isExpanded.toggle()
+        }
+    }
+
+    // MARK: 展开卡片组
+
+    @ViewBuilder
+    private var expandedContent: some View {
+        if case .unauthorized = state {
+            // 登录失效：凭证保留，引导到设置-多账号重新授权（管理操作在设置页完成）
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.red)
+
+                LText("登录失效，请到设置-多账号重新授权")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.kimiTextSecondary)
+
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.red.opacity(0.10))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        } else {
+            VStack(spacing: 8) {
+                HStack(spacing: 12) {
+                    UsageCard(
+                        title: languageManager.tr("本周用量"),
+                        subtitle: nil,
+                        percentage: quota?.weekly.percentage ?? 0,
+                        reset: quota?.weekly.timeUntilReset ?? "--",
+                        color: .kimiBlue,
+                        isLoading: isLoadingState
+                    )
+
+                    UsageCard(
+                        title: languageManager.tr("5小时用量"),
+                        subtitle: nil,
+                        percentage: quota?.fiveHour.percentage ?? 0,
+                        reset: quota?.fiveHour.timeUntilReset ?? "--",
+                        color: .orange,
+                        isLoading: isLoadingState
+                    )
+                }
+
+                if model.showBoosterWalletCard {
+                    BoosterWalletCard(
+                        wallet: quota?.boosterWallet,
+                        isLoading: isLoadingState
+                    )
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Kimi Web 重启提示
 
 struct KimiServerRestartHint: View {

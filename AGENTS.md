@@ -59,7 +59,8 @@ App 支持应用内语言切换（跟随系统 / 中文 / English），机制见
 ## 版本号管理
 
 - App 版本读取 `macOS/KimiCodeBar/Info.plist` 的 `CFBundleShortVersionString`，代码中通过 `Bundle.main.infoDictionary?["CFBundleShortVersionString"]` 读取。
-- `Info.plist` 中的 `CFBundleShortVersionString` 已改为引用 `$(MARKETING_VERSION)`，发版前只需修改 `macOS/KimiCodeBar.xcodeproj/project.pbxproj` 的 `MARKETING_VERSION`。
+- `Info.plist` 中的 `CFBundleShortVersionString` 已改为引用 `$(MARKETING_VERSION)`，`CFBundleVersion` 已改为引用 `$(CURRENT_PROJECT_VERSION)`。
+- 发版前修改 `macOS/KimiCodeBar.xcodeproj/project.pbxproj`，将 `MARKETING_VERSION` 与 `CURRENT_PROJECT_VERSION` 设为**统一的版本号**，例如都改为 `1.3.1`。Sparkle 自动更新会按该版本号判断是否需要更新，因此每次发版必须严格递增。
 - GitHub Release tag 使用 `v{VERSION}` 格式，例如 `v1.0.0`。
 - App 内「查看更新」跳转到 `https://github.com/WuChenh/KimiCodeBar/releases/`。
 
@@ -80,3 +81,14 @@ App 支持应用内语言切换（跟随系统 / 中文 / English），机制见
 - 色彩系统重构为纯 SwiftUI，系统语义色 + Material 背景自动适配浅色/深色模式。
 - 移除 Sparkle 自动更新框架，精简依赖。
 ```
+
+## 发版流程
+
+Agent 执行发版时，按以下顺序操作：
+
+1. **更新版本号**：修改 `macOS/KimiCodeBar.xcodeproj/project.pbxproj`，将 `MARKETING_VERSION` 与 `CURRENT_PROJECT_VERSION` 设为统一的新版本号（例如 `1.3.6`）。
+2. **更新更新日志**：修改 `CHANGELOG.md`，在顶部写入 `## v{VERSION} 更新内容` 及 3~5 条核心更新点（格式见「Release Notes 规范」）。
+3. **提交并打 tag**：`git add` 相关文件，`git commit`，然后 `git tag v{VERSION}`，`git push origin main v{VERSION}`。
+4. **监控 GitHub Actions**：确认 `Build and Release` workflow 全部步骤成功。
+5. **验证产物**：下载 DMG 与 Sparkle zip，执行 `codesign -vvv --deep --strict`、`spctl -a -t exec -vv`、`xcrun stapler validate` 确认通过。
+6. **清理旧版本**：删除不再需要的历史 Release 与 tag（仅保留最新版本及必要历史版本）。
