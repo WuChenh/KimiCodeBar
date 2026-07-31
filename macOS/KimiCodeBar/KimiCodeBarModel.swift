@@ -77,6 +77,17 @@ final class KimiCodeBarModel: ObservableObject {
   @Published var errorMessage: String?
   @Published var isLoading = false
 
+  // MARK: - 多账号状态
+
+  /// 已添加的账号列表（从 KimiAccountStore 加载）
+  @Published var accounts: [KimiAccount] = []
+  /// 主账号 ID
+  @Published var primaryAccountID: UUID?
+  /// 每个账号的配额加载状态
+  @Published var accountStates: [UUID: KimiAccountState] = [:]
+  /// 每个账号的最新配额快照
+  @Published var accountQuotas: [UUID: KimiQuota] = [:]
+
   @Published var oauthToken: KimiOAuthToken?
   @Published var oauthDeviceAuth: KimiDeviceAuthorization?
   @Published var oauthLoginInProgress = false
@@ -138,7 +149,7 @@ final class KimiCodeBarModel: ObservableObject {
   var hasKimiCredential: Bool {
     switch loginMethod {
     case .token: return !key.isEmpty
-    case .oauth: return oauthToken != nil
+    case .oauth: return !accounts.isEmpty
     }
   }
 
@@ -159,12 +170,135 @@ final class KimiCodeBarModel: ObservableObject {
     loadSecretsFromKeychain()
     migrateSecretsToSingleEntry()
     selectedProvider = ProviderType(rawValue: selectedProviderRaw) ?? .kimi
-    oauthToken = KimiOAuthService.loadStoredToken()
+    loadAccountsFromStore()
     refresh(showsLoading: false)
     Task { await loadKimiVersion() }
     startQuotaTimer()
     startUpdateTimer()
     KimiArchiveManager.shared.restartTimer()
+  }
+
+  // MARK: - 多账号管理
+
+  /// 从 KimiAccountStore 加载账号列表，同步到 published 属性
+  private func loadAccountsFromStore() {
+    let snapshot = KimiAccountStore.shared.snapshot
+    accounts = snapshot.accounts
+    primaryAccountID = snapshot.primaryAccountID
+    if let token = accounts.first(where: { $0.id == primaryAccountID })?.token {
+      oauthToken = token
+    }
+  }
+
+  /// 重新从磁盘加载账号（刷新周期中使用）
+  private func reloadAccountsFromDisk() {
+    KimiAccountStore.shared.reload()
+    let snapshot = KimiAccountStore.shared.snapshot
+    var changed = false
+    if accounts != snapshot.accounts { accounts = snapshot.accounts; changed = true }
+    if primaryAccountID != snapshot.primaryAccountID { primaryAccountID = snapshot.primaryAccountID; changed = true }
+    if changed, let token = accounts.first(where: { $0.id == primaryAccountID })?.token {
+      oauthToken = token
+    }
+  }
+
+  /// 获取账号的显示名称（别名 > "账号 N"）
+  func displayName(for account: KimiAccount) -> String {
+    if let alias = account.alias, !alias.isEmpty { return alias }
+    guard let index = accounts.firstIndex(where: { $0.id == account.id }) else { return "账号" }
+    return LanguageManager.tr("账号 %d", arguments: [index + 1])
+  }
+
+  /// 设为主账号
+  func setPrimaryAccount(_ id: UUID) {
+    KimiAccountStore.shared.setPrimaryAccount(id)
+    primaryAccountID = id
+    if let token = accounts.first(where: { $0.id == id })?.token {
+      oauthToken = token
+    }
+    refresh(showsLoading: false)
+  }
+
+  /// 重命名账号
+  func renameAccount(_ id: UUID, alias: String) {
+    let trimmed = alias.trimmingCharacters(in: .whitespacesAndNewlines)
+    KimiAccountStore.shared.setAlias(id: id, alias: trimmed.isEmpty ? nil : trimmed)
+    if let index = accounts.firstIndex(where: { $0.id == id }) {
+      accounts[index].alias = trimmed.isEmpty ? nil : trimmed
+    }
+  }
+
+  /// 删除账号
+  func removeAccount(_ id: UUID) {
+    let wasPrimary = id == primaryAccountID
+    KimiAccountStore.shared.removeAccount(id: id)
+    KimiAccountStore.shared.ensurePrimaryAccount()
+
+    accounts.removeAll(where: { $0.id == id })
+    accountStates.removeValue(forKey: id)
+    accountQuotas.removeValue(forKey: id)
+
+    let snapshot = KimiAccountStore.shared.snapshot
+    primaryAccountID = snapshot.primaryAccountID
+
+    if accounts.isEmpty {
+      oauthToken = nil
+      quota = nil
+      kimiMenuBarText = LanguageManager.tr("未登录")
+    } else if wasPrimary, let token = accounts.first(where: { $0.id == primaryAccountID })?.token {
+      oauthToken = token
+      refresh(showsLoading: false)
+    }
+  }
+
+  /// 重新授权指定的账号（登录失效后重新走 OAuth 流程）
+  func reauthorizeAccount(_ id: UUID) {
+    oauthLoginTask?.cancel()
+    oauthLoginError = nil
+    oauthDeviceAuth = nil
+    oauthLoginInProgress = true
+
+    oauthLoginTask = Task {
+      let result = await oauthService.requestDeviceAuthorization()
+      guard !Task.isCancelled else { return }
+
+      switch result {
+      case .failure(let error):
+        oauthLoginInProgress = false
+        oauthLoginError = oauthErrorDescription(error)
+        return
+      case .success(let auth):
+        oauthDeviceAuth = auth
+        if let urlString = auth.displayURL, let url = URL(string: urlString) {
+          NSWorkspace.shared.open(url)
+        }
+
+        let pollResult = await oauthService.pollDeviceToken(
+          deviceCode: auth.deviceCode,
+          initialInterval: TimeInterval(auth.interval ?? 5)
+        )
+        guard !Task.isCancelled else { return }
+
+        oauthLoginInProgress = false
+        oauthDeviceAuth = nil
+        switch pollResult {
+        case .success(let token):
+          KimiAccountStore.shared.updateToken(id: id, token: token)
+          if let index = accounts.firstIndex(where: { $0.id == id }) {
+            accounts[index].token = token
+          }
+          accountStates[id] = .loaded
+          if id == primaryAccountID {
+            oauthToken = token
+          }
+          refresh(showsLoading: false)
+        case .failure(let error) where error != .cancelled:
+          oauthLoginError = oauthErrorDescription(error)
+        case .failure:
+          break
+        }
+      }
+    }
   }
 
   private func migrateSecretsToSingleEntry() {
@@ -268,6 +402,10 @@ final class KimiCodeBarModel: ObservableObject {
         switch result {
         case .success(let quota):
           self.quota = quota
+          if let primaryID = self.primaryAccountID {
+            self.accountQuotas[primaryID] = quota
+            self.accountStates[primaryID] = .loaded
+          }
           self.kimiMenuBarText = LanguageManager.tr(
             "7D %1$d%% · 5H %2$d%%",
             arguments: [quota.weekly.percentage, quota.fiveHour.percentage])
@@ -275,6 +413,9 @@ final class KimiCodeBarModel: ObservableObject {
         case .failure(let error):
           if self.quota == nil {
             self.kimiMenuBarText = "--"
+          }
+          if let primaryID = self.primaryAccountID {
+            self.accountStates[primaryID] = .failed(kimiErrorDescription(error))
           }
           self.errorMessage = kimiErrorDescription(error)
         }
@@ -353,50 +494,53 @@ final class KimiCodeBarModel: ObservableObject {
   }
 
   /// 根据当前登录方式解析 Bearer 凭证。
-  /// OAuth 模式下使用 Bar 专属凭证文件（与 CLI 隔离），过期前自动用 refresh_token 换新。
+  /// OAuth 模式下使用 KimiAccountStore（与 CLI 隔离），过期前自动用 refresh_token 换新。
   private func resolveBearerToken() async -> String? {
     switch loginMethod {
     case .token:
       return key.isEmpty ? nil : key
     case .oauth:
-      if let fresh = KimiOAuthService.loadStoredToken() {
-        oauthToken = fresh
-      }
-      guard let token = oauthToken, token.isValid else { return nil }
+      // 重新加载磁盘，确保拿到最新的账号数据
+      reloadAccountsFromDisk()
+      guard let primaryID = primaryAccountID,
+        let index = accounts.firstIndex(where: { $0.id == primaryID })
+      else { return nil }
+      var token = accounts[index].token
+      guard token.isValid else { return nil }
 
       guard token.needsRefresh else {
+        oauthToken = token
         return token.accessToken
       }
 
       // 刷新前再读一次磁盘：防御其他 Bar 实例刚完成刷新并写入了新凭证
-      if let latest = KimiOAuthService.loadStoredToken(),
-        latest.accessToken != token.accessToken,
-        !latest.needsRefresh
+      if let fresh = KimiAccountStore.shared.freshAccount(id: primaryID),
+        fresh.token.accessToken != token.accessToken,
+        !fresh.token.needsRefresh
       {
-        oauthToken = latest
-        return latest.accessToken
+        accounts[index].token = fresh.token
+        oauthToken = fresh.token
+        return fresh.token.accessToken
       }
 
       let result = await oauthService.refreshAccessToken(token)
       switch result {
       case .success(let newToken):
-        KimiOAuthService.saveToken(newToken)
+        KimiAccountStore.shared.updateToken(id: primaryID, token: newToken)
+        accounts[index].token = newToken
         oauthToken = newToken
         return newToken.accessToken
       case .failure(.unauthorized):
-        // 若磁盘上已是另一份凭证（其他实例刷新成功），直接沿用而不是误删
-        if let latest = KimiOAuthService.loadStoredToken(),
-          latest.accessToken != token.accessToken
+        if let fresh = KimiAccountStore.shared.freshAccount(id: primaryID),
+          fresh.token.accessToken != token.accessToken
         {
-          oauthToken = latest
-          return latest.accessToken
+          accounts[index].token = fresh.token
+          oauthToken = fresh.token
+          return fresh.token.accessToken
         }
-        // 授权已被吊销，清除本地凭证（仅 Bar 专属文件），等待用户重新授权
-        oauthToken = nil
-        KimiOAuthService.clearToken()
+        accountStates[primaryID] = .unauthorized
         return nil
       case .failure:
-        // 网络等原因刷新失败，先沿用旧 token 让服务端决定是否拒绝
         return token.accessToken
       }
     }
@@ -405,6 +549,7 @@ final class KimiCodeBarModel: ObservableObject {
   // MARK: - OAuth 授权登录
 
   /// 启动 Device Code Flow：请求设备码 → 打开浏览器 → 后台轮询直至授权完成。
+  /// 授权成功后添加为新账号并设为主账号。
   func startOAuthLogin() {
     oauthLoginTask?.cancel()
     oauthLoginError = nil
@@ -439,8 +584,11 @@ final class KimiCodeBarModel: ObservableObject {
       oauthDeviceAuth = nil
       switch pollResult {
       case .success(let token):
-        KimiOAuthService.saveToken(token)
-        oauthToken = token
+        let newAccount = KimiAccount(id: UUID(), alias: nil, token: token, accountIdentifier: nil)
+        KimiAccountStore.shared.addAccount(newAccount)
+        loadAccountsFromStore()
+        setPrimaryAccount(newAccount.id)
+        accountStates[newAccount.id] = .loaded
         refresh(showsLoading: false)
       case .failure(let error) where error != .cancelled:
         oauthLoginError = oauthErrorDescription(error)
@@ -457,12 +605,18 @@ final class KimiCodeBarModel: ObservableObject {
     oauthLoginInProgress = false
   }
 
-  /// 退出授权登录：取消进行中的授权流程并清除本地凭证。
+  /// 退出授权登录：取消进行中的授权流程并清除所有凭证。
   func logoutOAuth() {
     cancelOAuthLogin()
     oauthLoginError = nil
+    for account in accounts {
+      KimiAccountStore.shared.removeAccount(id: account.id)
+    }
+    accounts.removeAll()
+    accountStates.removeAll()
+    accountQuotas.removeAll()
+    primaryAccountID = nil
     oauthToken = nil
-    KimiOAuthService.clearToken()
     quota = nil
     kimiMenuBarText = LanguageManager.tr("未登录")
     errorMessage = nil

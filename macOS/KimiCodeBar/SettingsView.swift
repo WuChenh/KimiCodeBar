@@ -4,6 +4,7 @@ import SwiftUI
 
 enum SettingsPane: String, CaseIterable, Identifiable {
   case basic
+  case accounts
   case panelCustom
   case archive
   case skills
@@ -14,6 +15,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
   var title: String {
     switch self {
     case .basic: return LanguageManager.tr("基本设置")
+    case .accounts: return LanguageManager.tr("多账号")
     case .panelCustom: return LanguageManager.tr("面板自定义")
     case .archive: return LanguageManager.tr("自动归档")
     case .skills: return LanguageManager.tr("技能管理")
@@ -24,6 +26,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
   var icon: String {
     switch self {
     case .basic: return "gear"
+    case .accounts: return "person.2"
     case .panelCustom: return "rectangle.3.group"
     case .archive: return "archivebox"
     case .skills: return "puzzlepiece.extension"
@@ -60,6 +63,8 @@ struct SettingsRootView: View {
       switch selectedPane {
       case .basic:
         BasicSettingsView()
+      case .accounts:
+        AccountsSettingsView()
       case .panelCustom:
         PanelCustomSettingsView()
       case .archive:

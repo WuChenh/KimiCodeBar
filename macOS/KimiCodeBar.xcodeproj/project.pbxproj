@@ -17,6 +17,8 @@
 		C3C950D6204C47819C0011560E684C68 /* ArchiveSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D072D603E59C42A791F3136E0477FE56 /* ArchiveSettingsView.swift */; };
 		FFAC0CE5E70E4F17AAD3B902 /* KimiCodeBarQuotaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F47923DD8C405BB3237AE1 /* KimiCodeBarQuotaService.swift */; };
 		7B1CA15E00000000000000000000A1 /* KimiLocalUsage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1CA15E00000000000000000000A2 /* KimiLocalUsage.swift */; };
+		7B1CA15E00000000000000000AC01 /* KimiAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1CA15E00000000000000000AC02 /* KimiAccount.swift */; };
+		7B1CA15E00000000000000000AC03 /* AccountsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1CA15E00000000000000000AC04 /* AccountsSettingsView.swift */; };
 		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D5 /* ProviderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */; };
 		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D7 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D8 /* KeychainHelper.swift */; };
 		C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F5 /* KimiCodeBarModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F6 /* KimiCodeBarModel.swift */; };
@@ -39,6 +41,8 @@
 		EA0ACF1E9B564B769FE86518 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		c68dac1893a64de08b00b18830c9deba /* KimiWebLaunchAgentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiWebLaunchAgentManager.swift; sourceTree = "<group>"; };
 		7B1CA15E00000000000000000000A2 /* KimiLocalUsage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiLocalUsage.swift; sourceTree = "<group>"; };
+		7B1CA15E00000000000000000AC02 /* KimiAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiAccount.swift; sourceTree = "<group>"; };
+		7B1CA15E00000000000000000AC04 /* AccountsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsSettingsView.swift; sourceTree = "<group>"; };
 		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderService.swift; sourceTree = "<group>"; };
 		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D8 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F6 /* KimiCodeBarModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiCodeBarModel.swift; sourceTree = "<group>"; };
@@ -81,8 +85,10 @@
 				7B1CA15E00000000000000000000A2 /* KimiLocalUsage.swift */,
 				c68dac1893a64de08b00b18830c9deba /* KimiWebLaunchAgentManager.swift */,
 				02F47923DD8C405BB3237AE1 /* KimiCodeBarQuotaService.swift */,
+				7B1CA15E00000000000000000AC02 /* KimiAccount.swift */,
 				9E4D2C7B1A5F48E3B6D09A21 /* KimiOAuthService.swift */,
 				E3B0FB687D9C4B9EB604A1EDB57506EC /* KimiArchiveManager.swift */,
+				7B1CA15E00000000000000000AC04 /* AccountsSettingsView.swift */,
 				D072D603E59C42A791F3136E0477FE56 /* ArchiveSettingsView.swift */,
 				7A11B22C33D44E55F660123B /* LanguageManager.swift */,
 				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */,
@@ -176,8 +182,10 @@
 				0C489D06D649421680AD66D7 /* KimiCodeBarApp.swift in Sources */,
 				4f9dbf90dffc49ad85242801801d170f /* KimiWebLaunchAgentManager.swift in Sources */,
 				FFAC0CE5E70E4F17AAD3B902 /* KimiCodeBarQuotaService.swift in Sources */,
+				7B1CA15E00000000000000000AC01 /* KimiAccount.swift in Sources */,
 				71B3F9A2C4D84E5B0F1A6C8D /* KimiOAuthService.swift in Sources */,
 				5495A4989471440499609844857244DC /* KimiArchiveManager.swift in Sources */,
+				7B1CA15E00000000000000000AC03 /* AccountsSettingsView.swift in Sources */,
 				C3C950D6204C47819C0011560E684C68 /* ArchiveSettingsView.swift in Sources */,
 				7A11B22C33D44E55F660123A /* LanguageManager.swift in Sources */,
 				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D5 /* ProviderService.swift in Sources */,
