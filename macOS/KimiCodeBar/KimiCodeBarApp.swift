@@ -783,6 +783,22 @@ struct KimiMenu: View {
             // Header
             HStack(spacing: 12) {
                 AnimatedKimiCodeLogo(width: 44, isAnimating: isMenuVisible)
+                    #if DEBUG
+                    .overlay(alignment: .bottomTrailing) {
+                        Text("DEV")
+                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 1)
+                            .background(
+                                Capsule().fill(Color(red: 0.86, green: 0.22, blue: 0.22))
+                            )
+                            .overlay(
+                                Capsule().stroke(.white, lineWidth: 1)
+                            )
+                            .offset(x: 5, y: 3)
+                    }
+                    #endif
 
                 Text("KimiCodeBar")
                     .font(.system(size: 18, weight: .bold))
