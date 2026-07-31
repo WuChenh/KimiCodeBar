@@ -1,3 +1,13 @@
+## v1.3.1
+
+- 修复菜单栏紧凑样式两位数百分比显示不全（如 15% 被截断为 15…）
+- 加大 7D/5H 标签与数值间距，菜单栏信息更易读
+
+### English
+
+- Fixed truncated two-digit percentages in the compact menu bar style (e.g. 15% cut off)
+- Increased spacing between 7D/5H labels and values for better readability
+
 ## v1.3.0
 
 - 新增多账号管理功能：支持添加多个 Kimi 账号，一键切换监控不同账号的配额消耗
