@@ -276,27 +276,27 @@ enum MenuBarTextRenderer {
   /// 紧凑样式：两行 7D/5H，标签右对齐、数值左对齐，彼此靠拢。
   private static func compactImage(weekly: Int, fiveHour: Int) -> NSImage {
     let content = VStack(alignment: .trailing, spacing: -1) {
-      HStack(spacing: 1) {
+      HStack(spacing: 3) {
         Text("7D")
           .font(.system(size: 10, weight: .medium, design: .default))
           .frame(width: 15, alignment: .trailing)
         Text(percentageText(weekly))
           .font(percentageFont(for: weekly))
           .monospacedDigit()
-          .frame(width: 24, alignment: .leading)
+          .frame(width: 28, alignment: .leading)
       }
-      HStack(spacing: 1) {
+      HStack(spacing: 3) {
         Text("5H")
           .font(.system(size: 10, weight: .medium, design: .default))
           .frame(width: 15, alignment: .trailing)
         Text(percentageText(fiveHour))
           .font(percentageFont(for: fiveHour))
           .monospacedDigit()
-          .frame(width: 24, alignment: .leading)
+          .frame(width: 28, alignment: .leading)
       }
     }
     .foregroundStyle(textColor)
-    .frame(width: 40, height: 20, alignment: .trailing)
+    .frame(width: 46, height: 20, alignment: .trailing)
 
     return render(content)
   }
