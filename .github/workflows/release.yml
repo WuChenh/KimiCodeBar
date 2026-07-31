@@ -252,6 +252,13 @@ jobs:
             sed 's/^- /<li>/; s/$/<\/li>/; s/^感谢 \(.*\)/<div class="thanks">\1<\/div>/' | \
             tr '\n' ' ')
 
+          # Release body 只取当前版本段落（CHANGELOG.md 含全部历史版本，不能整文件塞入）
+          awk -v header="## v${VERSION} 更新内容" '
+            $0 == header { flag=1 }
+            flag && /^## v/ && $0 != header { exit }
+            flag { print }
+          ' CHANGELOG.md > release-body.md
+
           cat > docs/release-notes.html << EOF
           <!DOCTYPE html>
           <html lang="zh-CN">
@@ -340,7 +347,7 @@ jobs:
           files: |
             dist/KimiCodeBar-*-macOS.dmg
             dist/KimiCodeBar-*-sparkle-update.zip
-          body_path: CHANGELOG.md
+          body_path: release-body.md
 
       # 部署 appcast.xml 到 GitHub Pages（Sparkle 自动更新依赖此 URL）
       - name: Upload Pages artifact
