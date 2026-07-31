@@ -116,18 +116,54 @@ struct KimiCodeBarApp: App {
 
 // MARK: - 配色
 
+private func dynamicColor(light: NSColor, dark: NSColor) -> Color {
+    Color(NSColor(name: nil, dynamicProvider: { appearance in
+        let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        return isDark ? dark : light
+    }))
+}
+
 extension ShapeStyle where Self == Color {
-  /// Kimi 品牌蓝色
-  static var kimiBlue: Color { Color(red: 0.23, green: 0.51, blue: 0.96) }
+    static var kimiPanelBackground: Color {
+        dynamicColor(
+            light: NSColor(red: 0.91, green: 0.91, blue: 0.93, alpha: 1.0),
+            dark: NSColor(red: 0.06, green: 0.08, blue: 0.13, alpha: 1.0)
+        )
+    }
 
-  /// 主文本色，跟随系统 Light/Dark 自动适配
-  static var kimiTextPrimary: Color { .primary }
+    static var kimiCardBackground: Color {
+        dynamicColor(
+            light: NSColor(white: 0.99, alpha: 1.0),
+            dark: NSColor(red: 0.11, green: 0.14, blue: 0.21, alpha: 1.0)
+        )
+    }
 
-  /// 次级文本色
-  static var kimiTextSecondary: Color { .secondary }
+    /// Kimi 品牌蓝色
+    static var kimiBlue: Color { Color(red: 0.23, green: 0.51, blue: 0.96) }
 
-  /// 三级文本色
-  static var kimiTextTertiary: Color { .secondary.opacity(0.45) }
+    /// 主文本色，显式控制浅色/深色以保持跨版本一致性
+    static var kimiTextPrimary: Color {
+        dynamicColor(
+            light: NSColor(white: 0.12, alpha: 1.0),
+            dark: NSColor(white: 1.0, alpha: 1.0)
+        )
+    }
+
+    /// 次级文本色
+    static var kimiTextSecondary: Color {
+        dynamicColor(
+            light: NSColor(white: 0.35, alpha: 1.0),
+            dark: NSColor(white: 1.0, alpha: 0.55)
+        )
+    }
+
+    /// 三级文本色
+    static var kimiTextTertiary: Color {
+        dynamicColor(
+            light: NSColor(white: 0.50, alpha: 1.0),
+            dark: NSColor(white: 1.0, alpha: 0.40)
+        )
+    }
 }
 
 // MARK: - 菜单栏图标
@@ -322,7 +358,7 @@ enum MenuBarTextRenderer {
     guard let nsImage = renderer.nsImage else {
       return NSImage(size: NSSize(width: 56, height: 22))
     }
-    nsImage.isTemplate = false
+    nsImage.isTemplate = true
     return nsImage
   }
 }
