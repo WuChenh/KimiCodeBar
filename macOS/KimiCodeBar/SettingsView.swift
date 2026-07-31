@@ -545,6 +545,7 @@ struct BasicSettingsView: View {
           deepseekText: model.deepseekMenuBarText
         )
       )
+      .foregroundStyle(.white)
       .padding(.horizontal, 10)
       .padding(.vertical, 6)
       .background(Color.black)
@@ -557,6 +558,7 @@ struct BasicSettingsView: View {
           fiveHour: model.quota?.fiveHour.percentage ?? 0
         )
       )
+      .foregroundStyle(.white)
       .padding(.horizontal, 10)
       .padding(.vertical, 6)
       .background(Color.black)
@@ -564,7 +566,7 @@ struct BasicSettingsView: View {
     } else {
       Text(model.text)
         .font(.system(size: 12, weight: .medium, design: .rounded))
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.white)
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(Color.black)
