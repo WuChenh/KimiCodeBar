@@ -2,7 +2,7 @@
   <img src="Assets/logo.gif" width="55" alt="KimiCodeBar Logo" align="absmiddle">&nbsp;&nbsp;KimiCodeBar
 </h1>
 <p align="left">
-  <a href="https://github.com/WuChenh/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.3.1-333333" alt="Version"></a>
+  <a href="https://github.com/WuChenh/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.4.0-333333" alt="Version"></a>
   <img src="https://img.shields.io/badge/macOS-333333?logo=apple&logoColor=white" alt="macOS">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/WuChenh/KimiCodeBar" alt="License"></a>
 </p>
@@ -70,3 +70,9 @@
 #
 
 ### 欢迎提交 👉 <a href="https://github.com/WuChenh/KimiCodeBar/issues">Issues</a> 反馈问题或建议
+
+#
+
+## 📄 开源协议
+
+本项目采用 [MIT License](LICENSE) 开源。你可以自由使用、复制、修改和分发本项目，但需要保留版权声明 [@xifandev](https://github.com/xifandev)

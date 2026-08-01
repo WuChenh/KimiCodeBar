@@ -122,11 +122,171 @@ jobs:
           fi
           xcrun stapler staple "$DMG_PATH"
 
+      # 把公证票据也 staple 到 App bundle 上，并重新打包 DMG 与 Sparkle zip，
+      # 避免用户把 App 拖到 Applications 后因无法联网验证而报"已损坏"。
+      - name: Staple app and rebuild DMG + Sparkle zip
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          DMG_NAME="KimiCodeBar-${VERSION}-macOS.dmg"
+          DMG_PATH="dist/${DMG_NAME}"
+          MOUNT_POINT=$(mktemp -d)
+
+          # 挂载已公证的旧 DMG
+          hdiutil attach "$DMG_PATH" -mountpoint "$MOUNT_POINT" -nobrowse -quiet
+
+          # 把 App 复制出来，staple 票据到 App bundle
+          # 注意：dist/KimiCodeBar.app 在 Package 阶段已存在，cp -R 会把它嵌套进去，必须先删除
+          rm -rf dist/KimiCodeBar.app
+          cp -R "$MOUNT_POINT/KimiCodeBar.app" dist/KimiCodeBar.app
+          xcrun stapler staple "dist/KimiCodeBar.app"
+          xcrun stapler validate "dist/KimiCodeBar.app"
+
+          # 卸载旧 DMG
+          hdiutil detach "$MOUNT_POINT" -quiet
+          rmdir "$MOUNT_POINT"
+
+          # 用已 staple 的 App 生成 Sparkle 自动更新用 zip
+          # -y 保留符号链接（Sparkle.framework 依赖 Versions/Current 等 symlink）
+          (cd dist && zip -yr "KimiCodeBar-${VERSION}-sparkle-update.zip" KimiCodeBar.app)
+
+          # 用已 staple 的 App 重新打包 DMG，确保 DMG 内的 App 也携带票据
+          rm -f "$DMG_PATH"
+          create-dmg \
+            --volname "KimiCodeBar" \
+            --background "macOS/Resources/dmg-background.png" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 450 210 \
+            --icon "KimiCodeBar.app" 150 210 \
+            --no-internet-enable \
+            "$DMG_PATH" \
+            "dist/KimiCodeBar.app"
+
+          # 重新签名新 DMG
+          codesign --force --timestamp --options runtime --sign "$SIGN_ID" "$DMG_PATH"
+
+      # ============ 生成 Sparkle 更新清单 ============
+      # appcast.xml 是 Sparkle 客户端检查更新的清单文件
+      # 必须随每次发版更新，并部署到 GitHub Pages 的固定 URL 供 App 拉取
+      - name: Generate Appcast
+        env:
+          SPARKLE_PRIVATE_ED_KEY: ${{ secrets.SPARKLE_PRIVATE_ED_KEY }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ZIP_NAME="KimiCodeBar-${VERSION}-sparkle-update.zip"
+          mkdir -p updates
+          cp "dist/${ZIP_NAME}" updates/
+          echo "$SPARKLE_PRIVATE_ED_KEY" | ./sparkle-tools/generate_appcast \
+            --ed-key-file - \
+            --download-url-prefix "https://github.com/xifandev/KimiCodeBar/releases/download/${GITHUB_REF_NAME}/" \
+            -o appcast.xml \
+            updates/
+
+          # 从 CHANGELOG.md 生成干净的 release notes HTML 页面
+          VERSION="${GITHUB_REF_NAME#v}"
+          RELEASE_DATE=$(date -u +"%Y 年 %m 月 %d 日")
+          NOTES_HTML=$(sed -n "/^## v${VERSION} 更新内容/,/^## v/p" CHANGELOG.md | \
+            grep -E "^- |^感谢" | \
+            sed 's/^- /<li>/; s/$/<\/li>/; s/^感谢 \(.*\)/<div class="thanks">\1<\/div>/' | \
+            tr '\n' ' ')
+
+          # Release body 只取当前版本段落（CHANGELOG.md 含全部历史版本，不能整文件塞入）
+          awk -v header="## v${VERSION} 更新内容" '
+            $0 == header { flag=1 }
+            flag && /^## v/ && $0 != header { exit }
+            flag { print }
+          ' CHANGELOG.md > release-body.md
+
+          cat > docs/release-notes.html << EOF
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>KimiCodeBar 更新日志</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+                background: #0d1117;
+                color: #e6edf3;
+                line-height: 1.6;
+                padding: 20px;
+                max-width: 600px;
+                margin: 0 auto;
+              }
+              .thanks {
+                font-size: 14px;
+                color: #8b949e;
+                margin-bottom: 16px;
+                padding: 10px 14px;
+                background: rgba(88, 166, 255, 0.08);
+                border-radius: 8px;
+                border: 1px solid rgba(88, 166, 255, 0.2);
+              }
+              .thanks a {
+                color: #58a6ff;
+                text-decoration: none;
+              }
+              ul {
+                list-style: none;
+                padding-left: 0;
+              }
+              li {
+                position: relative;
+                padding-left: 18px;
+                margin-bottom: 12px;
+                font-size: 14px;
+                color: #c9d1d9;
+              }
+              li::before {
+                content: "•";
+                position: absolute;
+                left: 0;
+                color: #58a6ff;
+                font-weight: bold;
+              }
+            </style>
+          </head>
+          <body>
+            ${NOTES_HTML}
+          </body>
+          </html>
+          EOF
+
+          # 注入 release notes 链接，让 Sparkle 更新弹窗显示干净的独立页面
+          RELEASE_NOTES_URL="https://xifandev.github.io/KimiCodeBar/release-notes.html"
+          sed -i.bak "s|</item>|<sparkle:releaseNotesLink>${RELEASE_NOTES_URL}</sparkle:releaseNotesLink>\\n        </item>|" appcast.xml
+          rm -f appcast.xml.bak
+
+          mkdir -p docs
+          cp appcast.xml docs/appcast.xml
+
+      # 将生成好的 appcast.xml 与 release-notes.html 提交回仓库，确保 Pages 工作流和仓库文件始终保持最新
+      - name: Commit appcast.xml and release-notes.html
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          # 在独立目录中 checkout main，避免污染当前构建环境
+          git clone --depth 1 --branch main "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/appcast-repo
+          cp appcast.xml /tmp/appcast-repo/docs/appcast.xml
+          cp docs/release-notes.html /tmp/appcast-repo/docs/release-notes.html
+          cd /tmp/appcast-repo
+          git add docs/appcast.xml docs/release-notes.html
+          git diff --cached --quiet || git commit -m "chore: update appcast.xml and release notes for ${GITHUB_REF_NAME}"
+          git push origin main
+
+      # ============ 发布阶段 ============
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
-          files: dist/KimiCodeBar-*-macOS-*.dmg
-          body_path: CHANGELOG.md
+          files: |
+            dist/KimiCodeBar-*-macOS.dmg
+            dist/KimiCodeBar-*-sparkle-update.zip
+          body_path: release-body.md
 
       - name: Cleanup keychain
         if: always()

@@ -12,31 +12,30 @@
 		4f9dbf90dffc49ad85242801801d170f /* KimiWebLaunchAgentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = c68dac1893a64de08b00b18830c9deba /* KimiWebLaunchAgentManager.swift */; };
 		5495A4989471440499609844857244DC /* KimiArchiveManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B0FB687D9C4B9EB604A1EDB57506EC /* KimiArchiveManager.swift */; };
 		71B3F9A2C4D84E5B0F1A6C8D /* KimiOAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E4D2C7B1A5F48E3B6D09A21 /* KimiOAuthService.swift */; };
-
+		7B1CA15E00000000000000000000B1 /* KimiAccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1CA15E00000000000000000000B2 /* KimiAccountStore.swift */; };
+		7B1CA15E00000000000000000000C1 /* CliCredentialsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1CA15E00000000000000000000C2 /* CliCredentialsService.swift */; };
 		7A11B22C33D44E55F660123A /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11B22C33D44E55F660123B /* LanguageManager.swift */; };
 		7A11B22C33D44E55F660123C /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 7A11B22C33D44E55F660123D /* Localizable.xcstrings */; };
+		B9C4D489692D416CA7616C08D907965F /* SparkleUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 528728E8E55940FC93765F944AFE050F /* SparkleUpdater.swift */; };
 		C3C950D6204C47819C0011560E684C68 /* ArchiveSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D072D603E59C42A791F3136E0477FE56 /* ArchiveSettingsView.swift */; };
+		7A11B22C33D44E55F660125A /* AccountsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11B22C33D44E55F660125B /* AccountsSettingsView.swift */; };
+		FF4EC20D71184E45B29FFDB3C8BC6524 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 35A4DA7EE8214A199549CDB1B5E1C570 /* Sparkle */; };
 		FFAC0CE5E70E4F17AAD3B902 /* KimiCodeBarQuotaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F47923DD8C405BB3237AE1 /* KimiCodeBarQuotaService.swift */; };
+		CBB2C6698EEA491186234001 /* DeepSeekService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBB2C6698EEA491186234002 /* DeepSeekService.swift */; };
 		7B1CA15E00000000000000000000A1 /* KimiLocalUsage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1CA15E00000000000000000000A2 /* KimiLocalUsage.swift */; };
-		7B1CA15E00000000000000000AC01 /* KimiAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1CA15E00000000000000000AC02 /* KimiAccount.swift */; };
-		7B1CA15E00000000000000000AC03 /* AccountsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1CA15E00000000000000000AC04 /* AccountsSettingsView.swift */; };
-		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D5 /* ProviderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */; };
-		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D7 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D8 /* KeychainHelper.swift */; };
-		C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F5 /* KimiCodeBarModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F6 /* KimiCodeBarModel.swift */; };
-		D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A6 /* SettingsView.swift */; };
-		E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6 /* UpdateViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B7 /* UpdateViews.swift */; };
-		F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5 /* PanelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C6 /* PanelComponents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		02F47923DD8C405BB3237AE1 /* KimiCodeBarQuotaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiCodeBarQuotaService.swift; sourceTree = "<group>"; };
 		2EF9AB1130A844A89CE0075C /* KimiCodeBarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiCodeBarApp.swift; sourceTree = "<group>"; };
 		510792D7AE86479585E4504C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		528728E8E55940FC93765F944AFE050F /* SparkleUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparkleUpdater.swift; sourceTree = "<group>"; };
 		7A11B22C33D44E55F660123B /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
 		7A11B22C33D44E55F660123D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		7D9C37304A73482ABB4CDE4D /* KimiCodeBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KimiCodeBar.entitlements; sourceTree = "<group>"; };
 		9E4D2C7B1A5F48E3B6D09A21 /* KimiOAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiOAuthService.swift; sourceTree = "<group>"; };
-
+		7B1CA15E00000000000000000000B2 /* KimiAccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiAccountStore.swift; sourceTree = "<group>"; };
+		7B1CA15E00000000000000000000C2 /* CliCredentialsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliCredentialsService.swift; sourceTree = "<group>"; };
 		D072D603E59C42A791F3136E0477FE56 /* ArchiveSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveSettingsView.swift; sourceTree = "<group>"; };
 		7A11B22C33D44E55F660125B /* AccountsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsSettingsView.swift; sourceTree = "<group>"; };
 		D44CECE74D174CC298CE6FE7 /* KimiCodeBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KimiCodeBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -44,14 +43,8 @@
 		EA0ACF1E9B564B769FE86518 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		c68dac1893a64de08b00b18830c9deba /* KimiWebLaunchAgentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiWebLaunchAgentManager.swift; sourceTree = "<group>"; };
 		7B1CA15E00000000000000000000A2 /* KimiLocalUsage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiLocalUsage.swift; sourceTree = "<group>"; };
-		7B1CA15E00000000000000000AC02 /* KimiAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiAccount.swift; sourceTree = "<group>"; };
-		7B1CA15E00000000000000000AC04 /* AccountsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsSettingsView.swift; sourceTree = "<group>"; };
-		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderService.swift; sourceTree = "<group>"; };
-		B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D8 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
-		C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F6 /* KimiCodeBarModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiCodeBarModel.swift; sourceTree = "<group>"; };
-		D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B7 /* UpdateViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateViews.swift; sourceTree = "<group>"; };
-		F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C6 /* PanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelComponents.swift; sourceTree = "<group>"; };
+		CBB2C6698EEA491186234002 /* DeepSeekService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekService.swift; sourceTree = "<group>"; };		7A11B22C33D44E55F6610002 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		7A11B22C33D44E55F6610003 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FF4EC20D71184E45B29FFDB3C8BC6524 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,31 +71,36 @@
 			isa = PBXGroup;
 			children = (
 				C7D94F1C4BCD423B99040DED /* KimiCodeBar */,
+				7A11B22C33D44E55F6610001 /* Configurations */,
 				6456A76DE5E141ED86925025 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		7A11B22C33D44E55F6610001 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				7A11B22C33D44E55F6610002 /* Debug.xcconfig */,
+				7A11B22C33D44E55F6610003 /* Release.xcconfig */,
+			);
+			path = Configurations;
 			sourceTree = "<group>";
 		};
 		C7D94F1C4BCD423B99040DED /* KimiCodeBar */ = {
 			isa = PBXGroup;
 			children = (
 				2EF9AB1130A844A89CE0075C /* KimiCodeBarApp.swift */,
+				528728E8E55940FC93765F944AFE050F /* SparkleUpdater.swift */,
 				7B1CA15E00000000000000000000A2 /* KimiLocalUsage.swift */,
 				c68dac1893a64de08b00b18830c9deba /* KimiWebLaunchAgentManager.swift */,
 				02F47923DD8C405BB3237AE1 /* KimiCodeBarQuotaService.swift */,
-				7B1CA15E00000000000000000AC02 /* KimiAccount.swift */,
 				9E4D2C7B1A5F48E3B6D09A21 /* KimiOAuthService.swift */,
-
+				7B1CA15E00000000000000000000B2 /* KimiAccountStore.swift */,
+				7B1CA15E00000000000000000000C2 /* CliCredentialsService.swift */,
+				CBB2C6698EEA491186234002 /* DeepSeekService.swift */,
 				E3B0FB687D9C4B9EB604A1EDB57506EC /* KimiArchiveManager.swift */,
-				7B1CA15E00000000000000000AC04 /* AccountsSettingsView.swift */,
 				D072D603E59C42A791F3136E0477FE56 /* ArchiveSettingsView.swift */,
 				7A11B22C33D44E55F660125B /* AccountsSettingsView.swift */,
 				7A11B22C33D44E55F660123B /* LanguageManager.swift */,
-				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D6 /* ProviderService.swift */,
-				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D8 /* KeychainHelper.swift */,
-				C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F6 /* KimiCodeBarModel.swift */,
-				D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A6 /* SettingsView.swift */,
-				E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B7 /* UpdateViews.swift */,
-				F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C6 /* PanelComponents.swift */,
 				510792D7AE86479585E4504C /* Assets.xcassets */,
 				7A11B22C33D44E55F660123D /* Localizable.xcstrings */,
 				7D9C37304A73482ABB4CDE4D /* KimiCodeBar.entitlements */,
@@ -156,6 +155,7 @@
 			);
 			mainGroup = 939F3BDDAEAC498B9399A2EA;
 			packageReferences = (
+				CFBD431D99764221B5DC5A75AE37FE46 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			productRefGroup = 6456A76DE5E141ED86925025 /* Products */;
 			projectDirPath = "";
@@ -183,24 +183,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B9C4D489692D416CA7616C08D907965F /* SparkleUpdater.swift in Sources */,
 				7B1CA15E00000000000000000000A1 /* KimiLocalUsage.swift in Sources */,
 				0C489D06D649421680AD66D7 /* KimiCodeBarApp.swift in Sources */,
 				4f9dbf90dffc49ad85242801801d170f /* KimiWebLaunchAgentManager.swift in Sources */,
 				FFAC0CE5E70E4F17AAD3B902 /* KimiCodeBarQuotaService.swift in Sources */,
-				7B1CA15E00000000000000000AC01 /* KimiAccount.swift in Sources */,
 				71B3F9A2C4D84E5B0F1A6C8D /* KimiOAuthService.swift in Sources */,
-
+				7B1CA15E00000000000000000000B1 /* KimiAccountStore.swift in Sources */,
+				7B1CA15E00000000000000000000C1 /* CliCredentialsService.swift in Sources */,
+				CBB2C6698EEA491186234001 /* DeepSeekService.swift in Sources */,
 				5495A4989471440499609844857244DC /* KimiArchiveManager.swift in Sources */,
-				7B1CA15E00000000000000000AC03 /* AccountsSettingsView.swift in Sources */,
 				C3C950D6204C47819C0011560E684C68 /* ArchiveSettingsView.swift in Sources */,
 				7A11B22C33D44E55F660125A /* AccountsSettingsView.swift in Sources */,
 				7A11B22C33D44E55F660123A /* LanguageManager.swift in Sources */,
-				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D5 /* ProviderService.swift in Sources */,
-				B0A1C2D3E4F5A6B7C8D9E0F1A2B3C4D7 /* KeychainHelper.swift in Sources */,
-				C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F5 /* KimiCodeBarModel.swift in Sources */,
-				D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5 /* SettingsView.swift in Sources */,
-				E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6 /* UpdateViews.swift in Sources */,
-				F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5 /* PanelComponents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -210,12 +205,11 @@
 		9597893A2DD1474881E9922A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = KimiCodeBar/KimiCodeBar.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1.3.1;
+				CURRENT_PROJECT_VERSION = 1.4.0;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_APP_INTENTS = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -229,23 +223,21 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.3.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kimicodebar.app;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				MARKETING_VERSION = 1.4.0;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
+			baseConfigurationReference = 7A11B22C33D44E55F6610003 /* Release.xcconfig */;
 			name = Release;
 		};
 		A3AD12A0E261486EA1E61006 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = KimiCodeBar/KimiCodeBar.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1.3.1;
+				CURRENT_PROJECT_VERSION = 1.4.0;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_APP_INTENTS = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -259,12 +251,11 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.3.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kimicodebar.app;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				MARKETING_VERSION = 1.4.0;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
+			baseConfigurationReference = 7A11B22C33D44E55F6610002 /* Debug.xcconfig */;
 			name = Debug;
 		};
 		DAEEA2C5D03D45FC8C820719 /* Release */ = {
@@ -358,6 +349,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CFBD431D99764221B5DC5A75AE37FE46 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		35A4DA7EE8214A199549CDB1B5E1C570 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CFBD431D99764221B5DC5A75AE37FE46 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 976A923F548E4143AD3AEC4D /* Project object */;
 }

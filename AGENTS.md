@@ -21,7 +21,8 @@
 
 ## 构建验证规范
 
-- 写完代码后只做临时编译验证（`xcodebuild build` 确认编译通过），验证完删除本次构建产物（DerivedData 中对应的 Build 目录）。
+- 写完代码后只做临时编译验证（`xcodebuild build` 确认编译通过）。
+- Debug/Release 已分叉（独立 Bundle ID、Debug 带 DEV 角标），本地产物与正式安装版完全隔离，**不需要清理临时构建产物**。
 - 不需要运行测试、也不需要启动 App 验证——维护者会自己用 Xcode 构建运行。
 
 ## 可点击元素反馈规范

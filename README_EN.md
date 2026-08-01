@@ -2,7 +2,7 @@
   <img src="Assets/logo.gif" width="55" alt="KimiCodeBar Logo" align="absmiddle">&nbsp;&nbsp;KimiCodeBar
 </h1>
 <p align="left">
-  <a href="https://github.com/WuChenh/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.3.1-333333" alt="Version"></a>
+  <a href="https://github.com/WuChenh/KimiCodeBar/releases"><img src="https://img.shields.io/badge/version-1.4.0-333333" alt="Version"></a>
   <img src="https://img.shields.io/badge/macOS-333333?logo=apple&logoColor=white" alt="macOS">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/WuChenh/KimiCodeBar" alt="License"></a>
 </p>
@@ -70,3 +70,9 @@ All data is stored locally. APIs only communicate with official Kimi / DeepSeek 
 #
 
 ### Feedback 👉 <a href="https://github.com/WuChenh/KimiCodeBar/issues">Issues</a>
+
+#
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE). You are free to use, copy, modify, and distribute this project, provided that the original copyright notice (Copyright © 2026 xifandev) and license text are retained.
